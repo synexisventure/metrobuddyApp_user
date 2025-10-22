@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
-const BusinessSingleFilter = () => {
-  const [activeTab, setActiveTab] = useState('Overview');
-
-  const tabs = ['Overview', 'Reviews', 'Photos', 'Features'];
+const BusinessSingleFilter = ({ activeTab, setActiveTab }) => {
+  const tabs = ['Overview', 'Reviews', 'Photos'];
 
   return (
     <View style={styles.container}>
@@ -41,8 +39,9 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   tabRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: 'row', 
+    gap : 20,
+    paddingHorizontal : 20
   },
   tab: {
     alignItems: 'center',
@@ -53,7 +52,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   activeTabText: {
-    color: '#1a73e8', // same blue as in Google UI
+    color: '#1a73e8',
     fontWeight: '500',
   },
   activeLine: {
