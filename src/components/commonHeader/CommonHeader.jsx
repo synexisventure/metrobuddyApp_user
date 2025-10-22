@@ -1,5 +1,6 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Animated } from 'react-native'; 
+import { StyleSheet, Text, View, Image, TouchableOpacity, Animated } from 'react-native';
 
 // NOTE: If you are using 'react-native-reanimated', change the above import to:
 // import Animated from 'react-native-reanimated';
@@ -9,7 +10,7 @@ const getIconSource = (name) => {
     switch (name) {
         case 'Location':
             // You'll need a location pin icon
-            return require('../../assets/images/location-pin.png'); 
+            return require('../../assets/images/location-pin.png');
         case 'Search':
             // You'll need a search magnifying glass icon
             return require('../../assets/images/search.png');
@@ -17,7 +18,7 @@ const getIconSource = (name) => {
             // You'll need a notification bell icon
             return require('../../assets/images/bell.png');
         default:
-            return null;    
+            return null;
     }
 }
 
@@ -26,22 +27,24 @@ const getIconSource = (name) => {
  * @param {Animated.Value} animatedScrollY - The animated value from the parent ScrollView/FlatList.
  */
 const CommonHeader = ({ animatedScrollY }) => {
-    
+
+    const navigation = useNavigation();
+
     // --- FIX APPLIED HERE ---
     // Safely use the prop, or create a new non-animated value (0) if the prop is undefined.
     // This prevents the "Cannot read property 'interpolate' of undefined" error.
-    const scrollY = animatedScrollY || new Animated.Value(0); 
-    
+    const scrollY = animatedScrollY || new Animated.Value(0);
+
     // 1. Define interpolation for background color change on scroll
-    const animatedBGC = scrollY.interpolate({ 
-        inputRange: [0, 100], 
+    const animatedBGC = scrollY.interpolate({
+        inputRange: [0, 100],
         outputRange: ['#155DFC', '#0E49B3'], // Blue to a slightly darker blue
         extrapolate: 'clamp',
     });
 
     // We use Animated.View for the main container to apply the animation
     return (
-        <Animated.View 
+        <Animated.View
             style={[
                 styles.container,
                 { backgroundColor: animatedBGC } // Apply the animated color
@@ -63,7 +66,12 @@ const CommonHeader = ({ animatedScrollY }) => {
                     </View>
 
                     {/* Notification Icon and Badge */}
-                    <TouchableOpacity style={styles.notificationWrapper}>
+                    <TouchableOpacity
+                        style={styles.notificationWrapper}
+                        onPress={() => {
+                            navigation.navigate("NotificationsScreen");
+                        }}
+                    >
                         <Image
                             source={getIconSource('Notification')}
                             style={styles.notificationIcon}
@@ -77,9 +85,11 @@ const CommonHeader = ({ animatedScrollY }) => {
             </View>
 
             {/* 3. Search Bar - NOW A TOUCHABLEOPACITY */}
-            <TouchableOpacity   
-                style={styles.searchContainer} 
-                onPress={() => console.log('Navigate to Search Screen')} // Add navigation logic here
+            <TouchableOpacity
+                style={styles.searchContainer}
+                onPress={() => {
+                    // navigation.navigate("NotificationsScreen");
+                }} // Add navigation logic here
                 activeOpacity={0.8}
             >
                 <Image
@@ -98,7 +108,7 @@ export default CommonHeader
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#155DFC', 
+        backgroundColor: '#155DFC',
         paddingTop: 10, // Space for status bar
         paddingHorizontal: 10,
         paddingBottom: 10,
@@ -136,7 +146,7 @@ const styles = StyleSheet.create({
     // --- Notification Styles ---
     notificationWrapper: {
         position: 'relative',
-        paddingHorizontal: 5, 
+        paddingHorizontal: 5,
     },
     notificationIcon: {
         width: 24,
@@ -147,15 +157,15 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: -6,
         right: 0,
-        backgroundColor: '#FF4500', 
+        backgroundColor: '#FF4500',
         borderRadius: 10,
         minWidth: 18,
         height: 18,
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 3,
-        borderWidth: 1, 
-        borderColor: '#fff', 
+        borderWidth: 1,
+        borderColor: '#fff',
     },
     notificationCount: {
         color: '#fff',
@@ -169,7 +179,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 10,
         paddingHorizontal: 15,
-        paddingVertical: 14, 
+        paddingVertical: 14,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -185,6 +195,6 @@ const styles = StyleSheet.create({
     searchText: {
         flex: 1,
         fontSize: 16,
-        color: '#999', 
+        color: '#999',
     },
 });

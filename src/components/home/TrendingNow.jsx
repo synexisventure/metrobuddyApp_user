@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import React from 'react';
-
+import { useNavigation } from '@react-navigation/native';
 // --- Data Structure ---
 const trendingData = [
   {
@@ -11,7 +11,7 @@ const trendingData = [
     reviews: 1200,
     isHot: true,
     // Assuming your images are named and located correctly
-    image: require('../../assets/images/trendingNow/hotel.png'), 
+    image: require('../../assets/images/trendingNow/hotel.png'),
   },
   {
     id: '2',
@@ -28,7 +28,7 @@ const trendingData = [
     category: 'Beauty & Spa',
     rating: 4.9,
     reviews: 650,
-    isHot: true, 
+    isHot: true,
     image: require('../../assets/images/trendingNow/hotel.png'), // Adjusted path for clarity
   },
 ];
@@ -37,13 +37,23 @@ const trendingData = [
 // NOTE: You must provide these images in your assets folder.
 const STAR_ICON = require('../../assets/images/star.png');
 const CHECKMARK_ICON = require('../../assets/images/check.png');
-const ARROW_ICON = require('../../assets/images/forward_icon.png');  
+const ARROW_ICON = require('../../assets/images/forward_icon.png');
 
 // --- Reusable List Item Component ---
 const TrendingItem = ({ item }) => {
+
+  const navigation = useNavigation();
+
   return (
-    <TouchableOpacity style={styles.itemContainer}>
-      
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={
+        ()=>{
+          navigation.navigate('BusinessSingleScreen')
+        }
+      }
+    >
+
       {/* Left side: Image and 'Hot' Badge */}
       <View style={styles.imageWrapper}>
         <Image source={item.image} style={styles.itemImage} resizeMode="cover" />
@@ -53,7 +63,7 @@ const TrendingItem = ({ item }) => {
           </View>
         )}
       </View>
-      
+
       {/* Center: Details */}
       <View style={styles.detailsContainer}>
         <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
@@ -64,7 +74,7 @@ const TrendingItem = ({ item }) => {
           <Text style={styles.itemRating}>{item.rating} ({item.reviews})</Text>
         </View>
       </View>
-      
+
       {/* Right side: Checkmark */}
       <View style={styles.checkmarkWrapper}>
         {/* Replaced AntDesign Checkmark with local image */}
@@ -76,13 +86,25 @@ const TrendingItem = ({ item }) => {
 
 // --- Main Component ---
 const TrendingNow = () => {
+
+  const navigation = useNavigation();
+
+  const handlePressViewAll = () => {
+    console.log("view all clicked trending businesses");
+    navigation.navigate("TrendingBusinesses")
+  }
+
+
   return (
     <View style={styles.container}>
-      
+
       {/* Header Row */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Trending Now</Text>
-        <TouchableOpacity style={styles.viewAllButton}>
+        <TouchableOpacity
+          style={styles.viewAllButton}
+          onPress={handlePressViewAll}
+        >
           <Text style={styles.viewAllText}>View All</Text>
           {/* Replaced MaterialIcons Arrow with local image */}
           <Image source={ARROW_ICON} style={styles.arrowIcon} resizeMode="contain" />
@@ -95,7 +117,7 @@ const TrendingNow = () => {
           <TrendingItem key={item.id} item={item} />
         ))}
       </View>
-      
+
     </View>
   );
 };
@@ -106,9 +128,9 @@ export default TrendingNow;
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#fff', 
+    backgroundColor: '#fff',
   },
-  
+
   // Header Styles
   header: {
     flexDirection: 'row',
@@ -132,18 +154,18 @@ const styles = StyleSheet.create({
     marginRight: 4, // Space between text and icon
   },
   arrowIcon: {
-      width: 16, // Adjust size to match the original icon size of 20
-      height: 16,
-      tintColor: '#4A90E2', // Blue tint for the arrow
+    width: 16, // Adjust size to match the original icon size of 20
+    height: 16,
+    tintColor: '#4A90E2', // Blue tint for the arrow
   },
-  
+
   // Trending Item Styles
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 12,
-    marginBottom: 12, 
+    marginBottom: 12,
     // Shadow properties for the 'card' look
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -152,14 +174,14 @@ const styles = StyleSheet.create({
     elevation: 1,
     paddingRight: 15,
   },
-  
+
   // Image and Hot Badge Styles
   imageWrapper: {
-    width: 100, 
+    width: 100,
     height: 100,
     marginRight: 10,
     borderRadius: 12,
-    overflow: 'hidden', 
+    overflow: 'hidden',
   },
   itemImage: {
     width: '100%',
@@ -169,7 +191,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     left: 0,
-    backgroundColor: '#FF5733', 
+    backgroundColor: '#FF5733',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderTopRightRadius: 6,
@@ -180,10 +202,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  
+
   // Details Styles
   detailsContainer: {
-    flex: 1, 
+    flex: 1,
     justifyContent: 'center',
   },
   itemName: {
@@ -202,27 +224,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ratingIcon: {
-      width: 14,
-      height: 14,
-      tintColor: '#FFC700', // Yellow tint for the star
+    width: 14,
+    height: 14,
+    tintColor: '#FFC700', // Yellow tint for the star
   },
   itemRating: {
     fontSize: 14,
     color: '#333',
     marginLeft: 5,
   },
-  
+
   // Checkmark Styles
   checkmarkWrapper: {
-    marginLeft: 'auto', 
+    marginLeft: 'auto',
     padding: 4,
     // borderWidth : 1,
-    backgroundColor : "#DCFCE7",
-    borderRadius : 8
+    backgroundColor: "#DCFCE7",
+    borderRadius: 8
   },
   checkmarkIcon: {
-      width: 20,
-      height: 20,
-      tintColor: '#60C872', // Green tint for the checkmark
+    width: 20,
+    height: 20,
+    tintColor: '#60C872', // Green tint for the checkmark
   }
 });

@@ -35,8 +35,8 @@ const Screen3 = () => {
       {/* Dots */}
       <View style={styles.dotsContainer}>
         <View style={[styles.dot, { opacity: 0.4 }]} />
-        <View style={[styles.dot, { opacity: 1 }]} />
         <View style={[styles.dot, { opacity: 0.4 }]} />
+        <View style={[styles.dot, { opacity: 1 }]} />
       </View>
 
       {/* Next Button */}

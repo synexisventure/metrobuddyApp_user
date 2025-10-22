@@ -1,19 +1,24 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const ProfileBody = () => {
+  const navigation = useNavigation();
+
   const items = [
     {
       id: 1,
       icon: require("../../assets/images/heart.png"),
       title: "Saved Businesses",
       subtitle: "Your favorite places",
+      screen: "SavedBusinessesScreen",
     },
     {
       id: 2,
       icon: require("../../assets/images/recent.png"),
       title: "Recent Searches",
       subtitle: "Your search history",
+      screen: "RecentScreachesScreen",
     },
     {
       id: 3,
@@ -21,44 +26,55 @@ const ProfileBody = () => {
       title: "Offers & Deals",
       subtitle: "Exclusive discounts",
       badge: "New",
+      screen: "OfferAndDealsScreen",
     },
     {
       id: 4,
       icon: require("../../assets/images/franchise.png"),
       title: "Become a Partner",
       subtitle: "List your business",
+      screen: "BecomePartnerScreen",
     },
     {
       id: 5,
       icon: require("../../assets/images/bell.png"),
       title: "Notifications",
       subtitle: "Manage alerts",
-      tint: "#2563EB", // blue tint for notifications
+      tint: "#2563EB",
+      screen: "NotificationsScreen",
     },
     {
       id: 6,
       icon: require("../../assets/images/settings.png"),
       title: "Settings",
       subtitle: "App preferences",
+      screen: "SettingsScreen",
     },
     {
       id: 7,
       icon: require("../../assets/images/security.png"),
       title: "Privacy & Security",
       subtitle: "Manage your privacy",
+      screen: "PrivacyAndSecurityScreen",
     },
     {
       id: 8,
       icon: require("../../assets/images/help.png"),
       title: "Help & Support",
       subtitle: "Get assistance",
+      screen: "HelpAndSupportScreen",
     },
   ];
 
   return (
     <View style={styles.container}>
       {items.map((item) => (
-        <TouchableOpacity key={item.id} activeOpacity={0.7} style={styles.card}>
+        <TouchableOpacity
+          key={item.id}
+          activeOpacity={0.7}
+          style={styles.card}
+          onPress={() => navigation.navigate(item.screen)}
+        >
           <View style={styles.left}>
             <Image
               source={item.icon}
@@ -89,6 +105,7 @@ const ProfileBody = () => {
 
 export default ProfileBody;
 
+// --- styles stay the same ---
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#F9FBFF",
