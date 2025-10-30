@@ -1,14 +1,44 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+import Toast from "react-native-toast-message";
 
 const ProfileFooter = () => {
+  const navigation = useNavigation();
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("isTeamLeader");
+
+      Toast.show({
+        type: "success",
+        text1: "Logged out",
+        text2: "You’ve been logged out successfully.",
+      });
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "UserAuth" }],
+      });
+    } catch (error) {
+      console.log("Logout Error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to logout. Please try again.",
+      });
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* --- Divider Line (Above Logout) --- */}
       <View style={styles.divider} />
 
       {/* --- Logout Row (Left aligned) --- */}
-      <TouchableOpacity style={styles.logoutRow}>
+      <TouchableOpacity style={styles.logoutRow} onPress={handleLogout}>
         <Image
           source={require("../../assets/images/logout.png")}
           style={styles.logoutIcon}

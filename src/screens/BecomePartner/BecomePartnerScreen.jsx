@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+ 
 import StepFormsHeader from "../../components/becomePartner/StepFormsHeader";
 
-import Step1Form from '../../components/becomePartner/Step1Form';
 import Step2Form from '../../components/becomePartner/Step2Form';
 import Step3Form from '../../components/becomePartner/Step3Form';
 import Step4Form from '../../components/becomePartner/Step4Form';
@@ -10,19 +10,44 @@ import Step5Form from '../../components/becomePartner/Step5Form';
 import Step6Form from '../../components/becomePartner/Step6Form';
 import Step7Form from '../../components/becomePartner/Step7Form';
 
-const BecomePartnerScreen = () => {
+
+import { useFocusEffect } from '@react-navigation/native';
+
+const AddBusinessScreen = () => {
   const [step, setStep] = useState(1);
-  const totalSteps = 7;
-  const scrollRef = useRef(null); // 👈 ref to ScrollView
+  const totalSteps = 6;
+  const scrollRef = useRef(null);
 
-  const scrollToTop = () => {
-    scrollRef.current?.scrollTo({ y: 0, animated: true });
-  };
+  const [status, setStatus] = useState({
+    1: 'pending',
+    2: 'pending',
+    3: 'pending',
+    4: 'pending',
+    5: 'pending',
+    6: 'pending',
+  });
 
-  const nextStep = () => {
+  const formNames = [
+    'Business Details',
+    'Contacts Details',
+    'Business Timing',
+    'Select Category',
+    'Photos & Videos',
+    'Verify Documents'
+  ];
+
+  const scrollToTop = () => scrollRef.current?.scrollTo({ y: 0, animated: true });
+
+  const nextStep = (submitted = true) => {
     setStep(prev => {
+      if (prev > 0 && prev <= totalSteps) {
+        setStatus(prevStatus => ({
+          ...prevStatus,
+          [prev]: submitted ? 'completed' : 'skipped'
+        }));
+      }
       const next = Math.min(prev + 1, totalSteps);
-      setTimeout(scrollToTop, 50); // 👈 scroll after state update
+      setTimeout(scrollToTop, 50);
       return next;
     });
   };
@@ -35,55 +60,115 @@ const BecomePartnerScreen = () => {
     });
   };
 
-  const progress = (step / totalSteps) * 100;
-
   const renderStep = () => {
+    // if (step === 0) {
+    //   return (
+    // <Step1Form
+    //   onNext={() => setStep(1)}
+    //   onLoginSuccess={() => setStep(1)}
+    // /> 
+    //   );
+    // }
     switch (step) {
-      case 1: return <Step1Form onNext={nextStep} />;
-      case 2: return <Step2Form onNext={nextStep} />;
-      case 3: return <Step3Form onNext={nextStep} />;
-      case 4: return <Step4Form onNext={nextStep} />;
-      case 5: return <Step5Form onNext={nextStep} />;
-      case 6: return <Step6Form onNext={nextStep} />;
-      case 7: return <Step7Form onNext={nextStep} />;
+      case 1: return <Step2Form onNext={() => nextStep(true)} />;
+      case 2: return <Step3Form onNext={() => nextStep(true)} />;
+      case 3: return <Step4Form onNext={() => nextStep(true)} />;
+      case 4: return <Step5Form onNext={() => nextStep(true)} />;
+      case 5: return <Step6Form onNext={() => nextStep(true)} />;
+      case 6: return <Step7Form onNext={() => nextStep(true)} />;
       default: return null;
     }
   };
 
+  const progressPercent = step > 0 ? (step / totalSteps) * 100 : 0;
+
+  // ✅ Reset to Step1 when screen refocuses
+  useFocusEffect(
+    useCallback(() => {
+      setStep(1);
+      setStatus({
+        1: 'pending',
+        2: 'pending',
+        3: 'pending',
+        4: 'pending',
+        5: 'pending',
+        6: 'pending',
+      });
+      setTimeout(scrollToTop, 50);
+    }, [])
+  );
+
   return (
     <>
       <StepFormsHeader />
-      <ScrollView
-        ref={scrollRef} // 👈 attach ref
-        style={styles.container}
-        contentContainerStyle={{ paddingBottom: 30 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Step Indicator */}
-        <View style={styles.progressSection}>
-          <Text style={styles.stepText}>Step {step} of {totalSteps}</Text>
-          <View style={styles.progressBackground}>
-            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+
+      {step > 0 && (
+        <View style={styles.headerContainer}>
+          <View style={styles.progressContainer}>
+            {formNames.map((name, index) => {
+              const formStep = index + 1;
+              const st = status[formStep];
+              const isCompleted = st === 'completed';
+              const isSkipped = st === 'skipped';
+              const isActive = step === formStep;
+
+              return (
+                <View key={formStep} style={styles.stepWrapper}>
+                  <View
+                    style={[
+                      styles.stepCircle,
+                      isCompleted ? styles.completed :
+                        isSkipped ? styles.skipped :
+                          isActive ? styles.active :
+                            styles.pending
+                    ]}
+                  >
+                    <Text style={styles.stepTextInside}>
+                      {isCompleted ? '✓' : isSkipped ? '–' : formStep}
+                    </Text>
+                  </View>
+
+                  <Text style={styles.stepLabel}>{name}</Text>
+
+                  {index < formNames.length - 1 && (
+                    <View style={[
+                      styles.stepLine,
+                      isCompleted ? styles.completedLine : styles.pendingLine
+                    ]} />
+                  )}
+                </View>
+              );
+            })}
           </View>
         </View>
+      )}
 
-        {/* Back Button */}
+      <ScrollView
+        ref={scrollRef}
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 36 }}
+        showsVerticalScrollIndicator={false}
+      >
+
         {step > 1 && (
-          <TouchableOpacity style={styles.backButton} onPress={prevStep}>
-            <Image
-              source={require('../../assets/images/backArrow.png')}
-              style={styles.backIcon}
-            />
-            <Text style={styles.backText}>Back</Text>
+          <TouchableOpacity activeOpacity={0.85} onPress={prevStep} style={styles.prevBtn}>
+            <View style={styles.prevContent}>
+              <Image 
+                source={require('../../assets/images/backArrow.png')}
+                style={styles.prevIcon}
+              /> 
+              <Text style={styles.prevText}>Previous Form</Text>
+            </View>
           </TouchableOpacity>
         )}
 
-        {/* Form Section */}
         {renderStep()}
 
-        {/* Skip Button */}
-        {step !== 1 && step !== 7 && (
-          <TouchableOpacity style={styles.skipBtn} onPress={nextStep}>
+        {step > 1 && (
+          <TouchableOpacity
+            style={styles.skipBtn}
+            onPress={() => nextStep(false)}
+          >
             <Text style={styles.skipText}>Skip for Now</Text>
           </TouchableOpacity>
         )}
@@ -92,62 +177,53 @@ const BecomePartnerScreen = () => {
   );
 };
 
-export default BecomePartnerScreen;
+export default AddBusinessScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    backgroundColor: "#fff"
-  },
-  progressSection: {
-    marginBottom: 16,
-  },
-  stepText: {
-    fontSize: 13,
-    color: '#555',
-    marginBottom: 6,
-  },
-  progressBackground: {
-    height: 6,
-    backgroundColor: '#d3d3d3',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: 6,
-    backgroundColor: '#06020a',
-    borderRadius: 3,
-  },
-  backButton: {
+  container: { flex: 1, paddingHorizontal: 10, paddingTop: 10, backgroundColor: "#fff" },
+  headerContainer: { backgroundColor: '#fff', paddingVertical: 12, borderBottomWidth: 1, borderColor: '#eee' },
+  progressContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 6, marginHorizontal: 6, zIndex: 2 },
+  stepWrapper: { flex: 1, alignItems: 'center', paddingHorizontal: 4 },
+  stepCircle: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center', zIndex: 3 },
+  stepTextInside: { color: '#fff', fontWeight: '700', fontSize: 12 },
+  completed: { backgroundColor: '#27ae60' },
+  skipped: { backgroundColor: '#f39c12' },
+  active: { backgroundColor: '#155DFC' },
+  pending: { backgroundColor: '#d3d3d3' },
+  stepLabel: { fontSize: 10, color: '#555', marginTop: 6, textAlign: 'center', width: 70 },
+  stepLine: { position: 'absolute', top: 15, right: -45, width: 90, height: 4, borderRadius: 2, zIndex: 1 },
+  completedLine: { backgroundColor: '#27ae60' },
+  pendingLine: { backgroundColor: '#d3d3d3' },
+
+  // 💙 Improved Previous Button
+  prevBtn: {
+    backgroundColor: '#F6F8FB',
+    borderWidth: 1,
+    borderColor: '#E0E4EA',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 18,
   },
-  backIcon: {
+  prevContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  prevIcon: {
     width: 20,
     height: 20,
-    tintColor: '#000',
-    marginRight: 6,
+    tintColor: '#155DFC',
+    marginRight: 8,
   },
-  backText: {
-    color: '#000',
+  prevText: {
+    color: '#155DFC',
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  skipBtn: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 14,
-  },
-  skipText: {
-    color: '#555',
-    fontSize: 15,
-    fontWeight: '500',
-  },
+
+  skipBtn: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 14, marginHorizontal: 10 },
+  skipText: { color: '#555', fontSize: 15, fontWeight: '500' },
 });
- 

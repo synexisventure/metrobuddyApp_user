@@ -1,45 +1,49 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
-const Screen3 = () => {
-  const navigation = useNavigation();
-
+const Screen2 = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      {/* Skip Button */}
-      <Text style={styles.skip}>Skip</Text>
+      {/* --- Skip button --- */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Screen3")}
+        style={styles.skipContainer}
+      >
+        <Text style={styles.skipText}>Skip</Text>
+      </TouchableOpacity>
 
-      {/* Blue Circle Icon */}
-      <View style={styles.iconWrapper}>
-        <Image
-          source={require('../../assets/images/franchise.png')}
-          style={styles.iconImage}
-        />
+      {/* --- Icon (Profile icon) --- */}
+      <View style={styles.iconContainer}>
+        <View style={styles.iconCircle}>
+          <Image
+            source={require("../../assets/images/franchise.png")}
+            style={styles.icon}
+          />
+        </View>
       </View>
 
-      {/* Local Image */}
+      {/* --- Image --- */}
       <Image
-        source={require('../../assets/images/images2/city.png')}
-        style={styles.image}
+        source={require("../../assets/images/images2/city.png")}
+        style={styles.mainImage}
       />
 
-      {/* Title */}
-      <Text style={styles.title}>Grow with Franchise Opportunities</Text>
-
-      {/* Subtitle */}
-      <Text style={styles.subtitle}>
-        Start your entrepreneurial journey with low investment, high returns, and 24×7 support from MetroBuddy.
-      </Text>
-
-      {/* Dots */}
-      <View style={styles.dotsContainer}>
-        <View style={[styles.dot, { opacity: 0.4 }]} />
-        <View style={[styles.dot, { opacity: 0.4 }]} />
-        <View style={[styles.dot, { opacity: 1 }]} />
+      {/* --- Text section --- */}
+      <View style={styles.textSection}>
+        <Text style={styles.title}>Grow with Franchise Opportunities</Text>
+        <Text style={styles.subtitle}>
+          Start your entrepreneurial journey with low investment, and 24×7 support from MetroBuddy.
+        </Text>
       </View>
 
-      {/* Next Button */}
+      {/* --- Dots --- */}
+      <View style={styles.dotsContainer}>
+        <View style={styles.dot} />
+        <View style={styles.dot} />
+        <View style={[styles.dot, styles.activeDot]} />
+      </View>
+
+      {/* --- Next button --- */}
       <TouchableOpacity
         style={styles.nextButton}
         onPress={() => navigation.navigate("LoginScreen")}
@@ -50,76 +54,86 @@ const Screen3 = () => {
   );
 };
 
-export default Screen3;
+export default Screen2;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF4F2',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#F9FBFF",
+    alignItems: "center",
     paddingHorizontal: 20,
+    paddingTop: 60,
   },
-  skip: {
-    position: 'absolute',
+  skipContainer: {
+    position: "absolute",
+    right: 20,
     top: 50,
-    right: 25,
-    fontSize: 14,
-    color: '#000',
   },
-  iconWrapper: {
+  skipText: {
+    color: "#111827",
+    fontSize: 13,
+  },
+  iconContainer: {
+    marginTop: 40,
+    marginBottom: 30,
+  },
+  iconCircle: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: '#2E6CF8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 30,
+    backgroundColor: "#2F6FE8",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  iconImage: {
+  icon: {
     width: 30,
     height: 30,
-    tintColor: '#fff', // white tint color for the icon
-    resizeMode: 'contain',
+    tintColor: "#fff",
   },
-  image: {
-    width: 250,
-    height: 150,
-    borderRadius: 15,
+  mainImage: {
+    width: 260,
+    height: 160,
+    borderRadius: 12,
+    resizeMode: "cover",
+  },
+  textSection: {
+    alignItems: "center",
     marginTop: 25,
+    paddingHorizontal: 10,
   },
   title: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    textAlign: 'center',
-    marginTop: 25,
+    fontWeight: "600",
+    color: "#111827",
+    textAlign: "center",
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 13,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 10,
-    paddingHorizontal: 20,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 18,
   },
   dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 25,
+    flexDirection: "row",
+    marginTop: 20,
+    marginBottom: 25,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#2E6CF8',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#C7D2FE",
     marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: "#2F6FE8",
   },
   nextButton: {
     backgroundColor: "#2F6FE8",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 60,
-    marginTop : 20
   },
   nextText: {
     color: "#fff",

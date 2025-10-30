@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,20 +8,136 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
+import Toast from "react-native-toast-message";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppContext } from "../../context/AppContext";
 
 const LoginScreen = () => {
+  const { API_BASE_URL, handleApiError } = useContext(AppContext);
   const navigation = useNavigation();
+
   const [loginMethod, setLoginMethod] = useState("phone");
   const [otpSent, setOtpSent] = useState(false);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleContinue = () => {
-    if (otp.length === 6) {
-      navigation.navigate("UserApp");
+  // Toast helper
+  const showToast = (type, text1, text2 = "") => {
+    Toast.show({
+      type,
+      text1,
+      text2,
+      visibilityTime: 2500,
+    });
+  };
+
+  // Validation
+  const validatePhone = (num) => /^[0-9]{10}$/.test(num);
+  const validateOtp = (num) => /^[0-9]{4}$/.test(num);
+  const validateEmail = (mail) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail.trim());
+
+  // ====================== SEND OTP ======================
+  const handleSendOtp = async () => {
+    if (loginMethod === "phone") {
+      if (!phone) {
+        showToast("error", "Validation Error", "Please enter your phone number");
+        return;
+      }
+      if (!validatePhone(phone)) {
+        showToast("error", "Invalid", "Please enter a valid 10-digit number");
+        return;
+      }
+    } else {
+      if (!email) {
+        showToast("error", "Validation Error", "Please enter your email");
+        return;
+      }
+      if (!validateEmail(email)) {
+        showToast("error", "Invalid", "Please enter a valid email address");
+        return;
+      }
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/user/login`, {
+        phone: loginMethod === "phone" ? phone : "",
+        email: loginMethod === "email" ? email : "",
+      });
+
+      if (response.data?.status) {
+        showToast("success", "OTP Sent", response.data?.message || "OTP sent successfully");
+        setOtpSent(true);
+      } else {
+        showToast("error", "Error", response.data?.message || "Failed to send OTP");
+      }
+    } catch (error) {
+      console.log("OTP send failed:", error?.response);
+
+      if (error?.response) {
+        showToast("error", "Error", error?.response?.data?.message);
+      } else if (!error?.response) {
+        showToast("error", "Error", "Network error. Please check your internet connection.");
+      } else {
+        showToast("error", "Error", "Something went wrong.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ====================== VERIFY OTP ======================
+  const handleVerifyOtp = async () => {
+    if (!otp) {
+      showToast("error", "Validation Error", "Please enter OTP");
+      return;
+    }
+    if (!validateOtp(otp)) {
+      showToast("error", "Invalid", "OTP must be exactly 4 digits");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/user/verify_otp`, {
+        phone: loginMethod === "phone" ? phone : "",
+        email: loginMethod === "email" ? email : "",
+        otp,
+      });
+
+      if (response.data?.status) {
+        showToast("success", "Success", response.data?.message || "OTP verified successfully");
+
+        const token = response.data?.token;
+        if (token) {
+          await AsyncStorage.setItem("token", token);
+        }
+
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "UserApp" }],
+        });
+      } else {
+        showToast("error", "Invalid OTP", response.data?.message || "Please try again");
+      }
+    } catch (error) {
+      console.log("OTP verify failed:", error?.response);
+
+      if (error?.response) {
+        showToast("error", "Error", error?.response?.data?.message);
+      } else if (!error?.response) {
+        showToast("error", "Error", "Network error. Please check your internet connection.");
+      } else {
+        showToast("error", "Error", "Something went wrong.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,7 +150,7 @@ const LoginScreen = () => {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Logo using CSS (Colors Only) */}
+        {/* Logo */}
         <View style={styles.logoWrapper}>
           <View style={styles.outerBlue}>
             <View style={styles.innerWhite}>
@@ -43,17 +159,23 @@ const LoginScreen = () => {
           </View>
         </View>
 
-
         <Text style={styles.title}>Welcome to MetroBuddy</Text>
         <Text style={styles.subtitle}>Your local business discovery app</Text>
 
         {/* Tabs */}
         <View style={styles.tabContainer}>
           <TouchableOpacity
-            style={[styles.tab, loginMethod === "phone" && styles.activeTab]}
+            disabled={otpSent}
+            style={[
+              styles.tab,
+              loginMethod === "phone" && styles.activeTab,
+              otpSent && { opacity: 0.5 },
+            ]}
             onPress={() => {
-              setLoginMethod("phone");
-              setOtpSent(false);
+              if (!otpSent) {
+                setLoginMethod("phone");
+                setOtpSent(false);
+              }
             }}
           >
             <Text
@@ -67,10 +189,17 @@ const LoginScreen = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.tab, loginMethod === "email" && styles.activeTab]}
+            disabled={true} // Email login temporarily disabled
+            style={[
+              styles.tab,
+              loginMethod === "email" && styles.activeTab,
+              otpSent && { opacity: 0.5 },
+            ]}
             onPress={() => {
-              setLoginMethod("email");
-              setOtpSent(false);
+              if (!otpSent) {
+                setLoginMethod("email");
+                setOtpSent(false);
+              }
             }}
           >
             <Text
@@ -93,10 +222,12 @@ const LoginScreen = () => {
                 <Text style={styles.countryCode}>+91</Text>
                 <TextInput
                   placeholder="Enter your phone number"
+                  placeholderTextColor={"#555"}
                   style={styles.input}
-                  keyboardType="phone-pad"
+                  keyboardType="number-pad"
+                  maxLength={10}
                   value={phone}
-                  onChangeText={setPhone}
+                  onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, ""))}
                 />
               </View>
             </>
@@ -105,6 +236,7 @@ const LoginScreen = () => {
               <Text style={styles.label}>Email Address</Text>
               <TextInput
                 placeholder="Enter your email"
+                placeholderTextColor={"#555"}
                 style={[styles.input, { paddingLeft: 15 }]}
                 keyboardType="email-address"
                 value={email}
@@ -117,27 +249,34 @@ const LoginScreen = () => {
           {/* OTP Section */}
           {!otpSent ? (
             <TouchableOpacity
-              style={styles.sendOtpBtn}
-              onPress={() => setOtpSent(true)}
+              style={[styles.sendOtpBtn, loading && { backgroundColor: "#8CAAFD" }]}
+              onPress={handleSendOtp}
+              disabled={loading}
             >
-              <Text style={styles.sendOtpText}>Send OTP</Text>
+              <Text style={styles.sendOtpText}>
+                {loading ? "Sending..." : "Send OTP"}
+              </Text>
             </TouchableOpacity>
           ) : (
             <>
               <Text style={styles.label}>Enter OTP</Text>
               <TextInput
-                placeholder="Enter 6-digit OTP"
+                placeholder="Enter 4-digit OTP"
+                placeholderTextColor={"#555"}
                 style={[styles.input, { paddingLeft: 15 }]}
-                keyboardType="numeric"
-                maxLength={6}
+                keyboardType="number-pad"
+                maxLength={4}
                 value={otp}
-                onChangeText={setOtp}
+                onChangeText={(text) => setOtp(text.replace(/[^0-9]/g, ""))}
               />
               <TouchableOpacity
-                style={styles.continueBtn}
-                onPress={handleContinue}
+                style={[styles.continueBtn, loading && { backgroundColor: "#8CAAFD" }]}
+                onPress={handleVerifyOtp}
+                disabled={loading}
               >
-                <Text style={styles.continueText}>Continue</Text>
+                <Text style={styles.continueText}>
+                  {loading ? "Verifying..." : "Continue"}
+                </Text>
               </TouchableOpacity>
             </>
           )}
@@ -150,6 +289,7 @@ const LoginScreen = () => {
           <Text style={styles.linkText}>Privacy Policy</Text>
         </Text>
       </ScrollView>
+      <Toast />
     </KeyboardAvoidingView>
   );
 };
@@ -163,8 +303,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 70,
   },
-
-  // LOGO
   logoWrapper: {
     justifyContent: "center",
     alignItems: "center",
@@ -192,8 +330,6 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     backgroundColor: "#2E6CF8",
   },
-
-
   title: {
     fontSize: 18,
     fontWeight: "600",
@@ -205,7 +341,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 25,
   },
-
   tabContainer: {
     flexDirection: "row",
     backgroundColor: "#F1F3F6",
@@ -227,7 +362,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-
   inputContainer: {
     width: "90%",
     marginTop: 25,
@@ -280,7 +414,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontSize: 15,
   },
-
   footerText: {
     textAlign: "center",
     fontSize: 12,

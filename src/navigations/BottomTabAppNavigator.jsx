@@ -8,31 +8,39 @@ import ProfileStackNavigation from './profile/ProfileStackNavigation';
 import CategoryScreen from "../screens/category/CategoryScreen";
 import FavoritesScreen from "../screens/favorites/FavoritesScreen";
 import FranchiseScreen from "../screens/franchise/FranchiseScreen";
+import LeadsScreen from "../screens/leads/LeadsScreen";
 
 const Tab = createBottomTabNavigator();
 
-// --- Placeholder for Icons (REPLACE WITH YOUR ACTUAL ASSETS) ---
+// --- Placeholder for Icons (REPLACE WITH ACTUAL ASSETS) ---
 const getIconSource = (name) => {
-    // You must ensure these file paths are correct for your project
+
     switch (name) {
         case 'Home':
             return require('../assets/images/home.png');
         case 'Categories':
             return require('../assets/images/category.png');
         case 'Favorites':
-            // return require('../assets/images/heart.png');
             return require('../assets/images/heart.png');
         case 'Franchise':
             return require('../assets/images/franchise.png');
         case 'Profile':
             return require('../assets/images/profile.png');
+        case 'Leads':
+            return require('../assets/images/leads.png');
         default:
             return null;
     }
 }
 // ---------------------------------------------------------------
 
+
+
 const BottomTabAppNavigator = () => {
+
+    const showLeadsTab = true; // or condition from props/context
+    const labelFontSize = showLeadsTab ? 10 : 12;
+
     return (
         <Tab.Navigator
             screenOptions={{
@@ -43,15 +51,16 @@ const BottomTabAppNavigator = () => {
                     backgroundColor: '#fff',
                     height: 60,
                     paddingBottom: 5,
-                    paddingTop: 5,
+                    paddingTop: 5, 
                     // Optional: remove top border line if desired
-                    // borderTopWidth: 0, 
+                    // borderTopWidth: 0,
                 },
                 // Set colors for the screenshot look (Active: Blue, Inactive: Gray)
                 tabBarActiveTintColor: '#155DFC',
                 tabBarInactiveTintColor: '#999',
                 tabBarLabelStyle: {
-                    fontSize: 12,
+                    // fontSize: 12,
+                    fontSize: labelFontSize,
                     fontWeight: '600', // Matches the bold look in the screenshot
                 },
                 tabBarHideOnKeyboard: true,
@@ -101,6 +110,21 @@ const BottomTabAppNavigator = () => {
                 }}
             />
             <Tab.Screen
+                name="Leads"
+                component={LeadsScreen}
+                options={{
+                    tabBarLabel: 'Leads',
+                    tabBarIcon: ({ color }) => (
+                        <Image
+                            // Set size to 20x20
+                            source={getIconSource('Leads')}
+                            style={{ tintColor: color, width: 20, height: 20 }}
+                        />
+                    ),
+                }}
+            />
+
+            <Tab.Screen
                 name="Franchise"
                 component={FranchiseScreen}
                 options={{
@@ -127,6 +151,7 @@ const BottomTabAppNavigator = () => {
                         />
                     ),
                 }}
+
                 listeners={({ navigation }) => ({
                     tabPress: e => {
                         // Prevent default behavior
