@@ -1,8 +1,10 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useContext } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
- 
-import StepFormsHeader from "../../components/becomePartner/StepFormsHeader";
+import { useFocusEffect } from '@react-navigation/native';
+import { AppContext } from '../../context/AppContext';
 
+// Components
+import StepFormsHeader from "../../components/becomePartner/StepFormsHeader";
 import Step2Form from '../../components/becomePartner/Step2Form';
 import Step3Form from '../../components/becomePartner/Step3Form';
 import Step4Form from '../../components/becomePartner/Step4Form';
@@ -10,10 +12,13 @@ import Step5Form from '../../components/becomePartner/Step5Form';
 import Step6Form from '../../components/becomePartner/Step6Form';
 import Step7Form from '../../components/becomePartner/Step7Form';
 
-
-import { useFocusEffect } from '@react-navigation/native';
-
 const AddBusinessScreen = () => {
+  const {
+    fetchFormStatus,
+    formStatus,
+    formStatusLoading,
+  } = useContext(AppContext);
+
   const [step, setStep] = useState(1);
   const totalSteps = 6;
   const scrollRef = useRef(null);
@@ -60,15 +65,29 @@ const AddBusinessScreen = () => {
     });
   };
 
+  // ✅ Fetch form status from context
+  useFocusEffect(
+    useCallback(() => {
+      fetchFormStatus();
+      setTimeout(scrollToTop, 50);
+    }, [])
+  );
+
+  // ✅ Whenever formStatus updates, update step circles
+  React.useEffect(() => {
+    if (formStatus) {
+      setStatus({
+        1: formStatus.business_details ? 'completed' : 'pending',
+        2: formStatus.contact_details ? 'completed' : 'pending',
+        3: formStatus.business_timing ? 'completed' : 'pending',
+        4: formStatus.business_category ? 'completed' : 'pending',
+        5: formStatus.photos_videos ? 'completed' : 'pending',
+        6: formStatus.document_upload ? 'completed' : 'pending',
+      });
+    }
+  }, [formStatus]);
+
   const renderStep = () => {
-    // if (step === 0) {
-    //   return (
-    // <Step1Form
-    //   onNext={() => setStep(1)}
-    //   onLoginSuccess={() => setStep(1)}
-    // /> 
-    //   );
-    // }
     switch (step) {
       case 1: return <Step2Form onNext={() => nextStep(true)} />;
       case 2: return <Step3Form onNext={() => nextStep(true)} />;
@@ -79,24 +98,6 @@ const AddBusinessScreen = () => {
       default: return null;
     }
   };
-
-  const progressPercent = step > 0 ? (step / totalSteps) * 100 : 0;
-
-  // ✅ Reset to Step1 when screen refocuses
-  useFocusEffect(
-    useCallback(() => {
-      setStep(1);
-      setStatus({
-        1: 'pending',
-        2: 'pending',
-        3: 'pending',
-        4: 'pending',
-        5: 'pending',
-        6: 'pending',
-      });
-      setTimeout(scrollToTop, 50);
-    }, [])
-  );
 
   return (
     <>
@@ -118,9 +119,9 @@ const AddBusinessScreen = () => {
                     style={[
                       styles.stepCircle,
                       isCompleted ? styles.completed :
-                        isSkipped ? styles.skipped :
-                          isActive ? styles.active :
-                            styles.pending
+                      isSkipped ? styles.skipped :
+                      isActive ? styles.active :
+                      styles.pending
                     ]}
                   >
                     <Text style={styles.stepTextInside}>
@@ -128,13 +129,18 @@ const AddBusinessScreen = () => {
                     </Text>
                   </View>
 
-                  <Text style={styles.stepLabel}>{name}</Text>
+                  <Text style={styles.stepLabel}>
+                    {name}
+                    {index === 0 && <Text style={styles.mandatoryStar}> *</Text>}
+                  </Text>
 
                   {index < formNames.length - 1 && (
-                    <View style={[
-                      styles.stepLine,
-                      isCompleted ? styles.completedLine : styles.pendingLine
-                    ]} />
+                    <View
+                      style={[
+                        styles.stepLine,
+                        isCompleted ? styles.completedLine : styles.pendingLine
+                      ]}
+                    />
                   )}
                 </View>
               );
@@ -149,14 +155,13 @@ const AddBusinessScreen = () => {
         contentContainerStyle={{ paddingBottom: 36 }}
         showsVerticalScrollIndicator={false}
       >
-
         {step > 1 && (
           <TouchableOpacity activeOpacity={0.85} onPress={prevStep} style={styles.prevBtn}>
             <View style={styles.prevContent}>
-              <Image 
+              <Image
                 source={require('../../assets/images/backArrow.png')}
                 style={styles.prevIcon}
-              /> 
+              />
               <Text style={styles.prevText}>Previous Form</Text>
             </View>
           </TouchableOpacity>
@@ -191,11 +196,15 @@ const styles = StyleSheet.create({
   active: { backgroundColor: '#155DFC' },
   pending: { backgroundColor: '#d3d3d3' },
   stepLabel: { fontSize: 10, color: '#555', marginTop: 6, textAlign: 'center', width: 70 },
+  mandatoryStar: {
+    color: '#E53935',
+    fontWeight: '700',
+    fontSize: 12,
+  },
   stepLine: { position: 'absolute', top: 15, right: -45, width: 90, height: 4, borderRadius: 2, zIndex: 1 },
   completedLine: { backgroundColor: '#27ae60' },
   pendingLine: { backgroundColor: '#d3d3d3' },
 
-  // 💙 Improved Previous Button
   prevBtn: {
     backgroundColor: '#F6F8FB',
     borderWidth: 1,

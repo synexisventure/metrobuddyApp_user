@@ -117,6 +117,12 @@ const LoginScreen = () => {
         const token = response.data?.token;
         if (token) {
           await AsyncStorage.setItem("token", token);
+
+          if (loginMethod === "phone" && phone) {
+            await AsyncStorage.setItem("userPhone", phone);
+          } else if (loginMethod === "email" && email) {
+            await AsyncStorage.setItem("userEmail", email);
+          }
         }
 
         navigation.reset({
