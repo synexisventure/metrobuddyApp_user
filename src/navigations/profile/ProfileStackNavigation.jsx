@@ -10,6 +10,8 @@ import NotificationsScreen from "../../screens/notifications/NotificationsScreen
 import HelpAndSupportScreen from "../../screens/helpAndSupport/HelpAndSupportScreen";
 import SettingsScreen from "../../screens/settings/SettingsScreen";
 import PrivacyAndSecurityScreen from "../../screens/privacyAndSecurity/PrivacyAndSecurityScreen";
+import BecomePartnerFormScreen from "../../screens/BecomePartner/BecomePartnerFormScreen";
+import SubscriptionScreen from "../../screens/Subscription/SubscriptionScreen";
 
 
 const ProfileStackNavigation = () => {
@@ -25,11 +27,13 @@ const ProfileStackNavigation = () => {
             <Stack.Screen name="RecentScreachesScreen" component={RecentScreachesScreen} /> 
             <Stack.Screen name="OfferAndDealsScreen" component={OfferAndDealsScreen} />  
             <Stack.Screen name="BecomePartnerScreen" component={BecomePartnerScreen} />
+            <Stack.Screen name="BecomePartnerFormScreen" component={BecomePartnerFormScreen} />
+            <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
+
             <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} /> 
             <Stack.Screen name="HelpAndSupportScreen" component={HelpAndSupportScreen} /> 
             <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
             <Stack.Screen name="PrivacyAndSecurityScreen" component={PrivacyAndSecurityScreen} /> 
-
 
         </Stack.Navigator>
     )

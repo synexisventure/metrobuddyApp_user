@@ -16,9 +16,9 @@ import { isValidEmail, isValidMobile } from "../../utils/validators";
 
 const Step3Form = ({ onNext }) => {
   const { API_BASE_URL, handleApiError } = useContext(AppContext);
-
+ 
   const [primaryMobile, setPrimaryMobile] = useState("");
-  const [primaryEmail, setPrimaryEmail] = useState("");
+  // const [primaryEmail, setPrimaryEmail] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [isWhatsappSame, setIsWhatsappSame] = useState(false);
   const [additionalPhones, setAdditionalPhones] = useState([""]);
@@ -39,7 +39,7 @@ const Step3Form = ({ onNext }) => {
 
       const data = resp.data?.data;
       if (data) {
-        setPrimaryEmail(data.primaryEmail || "");
+        // setPrimaryEmail(data.primaryEmail || "");
         setWhatsappNumber(data.whatsappNumber || "");
         setAdditionalPhones(data.additionalPhones?.length ? data.additionalPhones : [""]);
         setAdditionalEmails(data.additionalEmails?.length ? data.additionalEmails : [""]);
@@ -87,9 +87,9 @@ const Step3Form = ({ onNext }) => {
     else if (!isValidMobile(primaryMobile))
       newErrors.primaryMobile = "Enter a valid 10-digit mobile number";
 
-    if (!primaryEmail.trim()) newErrors.primaryEmail = "Primary email is required";
-    else if (!isValidEmail(primaryEmail))
-      newErrors.primaryEmail = "Enter a valid email address";
+    // if (!primaryEmail.trim()) newErrors.primaryEmail = "Primary email is required";
+    // else if (!isValidEmail(primaryEmail))
+    //   newErrors.primaryEmail = "Enter a valid email address";
 
     if (!whatsappNumber.trim()) newErrors.whatsappNumber = "WhatsApp number is required";
     else if (!isValidMobile(whatsappNumber))
@@ -128,6 +128,18 @@ const Step3Form = ({ onNext }) => {
     setAdditionalEmails(newEmails.length ? newEmails : [""]);
   };
 
+    //  business id state 
+  const [businessId, setBusinessId] = useState(null);
+  useEffect(() => {
+    const loadBusinessId = async () => {
+      if (!businessId) {
+        const savedId = await AsyncStorage.getItem("businessId");
+        if (savedId) setBusinessId(savedId);
+      }
+    };
+    loadBusinessId();
+  }, []);
+
   // ✅ Submit form
   const handleSaveAndContinue = async () => {
     if (!validateFields()) {
@@ -140,7 +152,8 @@ const Step3Form = ({ onNext }) => {
       const token = await AsyncStorage.getItem("token");
       const payload = {
         primaryMobile,
-        primaryEmail,
+        // primaryEmail,
+        businessId,
         whatsappNumber,
         additionalPhones: additionalPhones.filter((p) => p.trim() !== ""),
         additionalEmails: additionalEmails.filter((e) => e.trim() !== ""),
@@ -167,6 +180,8 @@ const Step3Form = ({ onNext }) => {
       setLoading(false);
     }
   };
+
+
 
   // 🌀 Loader
   if (fetching) {
@@ -209,7 +224,7 @@ const Step3Form = ({ onNext }) => {
       <Text style={styles.subtitle}>Tell us how customers can reach you</Text>
 
       {renderInput("Primary Mobile", primaryMobile, setPrimaryMobile, "primaryMobile", "phone-pad", false)}
-      {renderInput("Primary Email", primaryEmail, setPrimaryEmail, "primaryEmail", "email-address")}
+      {/* {renderInput("Primary Email", primaryEmail, setPrimaryEmail, "primaryEmail", "email-address")} */}
 
       {/* WhatsApp */}
       <Text style={styles.label}>WhatsApp Number</Text>
@@ -273,7 +288,7 @@ const Step3Form = ({ onNext }) => {
         </View>
       ))} */}
 
-      {additionalPhones.map((phone, index) => (
+      {Array.isArray(additionalPhones) && additionalPhones.map((phone, index) => (
         <View key={index} style={{ marginBottom: 10 }}>
           <TextInput
             style={[

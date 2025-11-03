@@ -1,238 +1,171 @@
-import React, { useState, useRef, useCallback, useContext } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useContext, useEffect, useState } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    TouchableOpacity,
+    ScrollView,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import StepFormsHeader from '../../components/becomePartner/StepFormsHeader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppContext } from '../../context/AppContext';
+import axios from 'axios';
 
-// Components
-import StepFormsHeader from "../../components/becomePartner/StepFormsHeader";
-import Step2Form from '../../components/becomePartner/Step2Form';
-import Step3Form from '../../components/becomePartner/Step3Form';
-import Step4Form from '../../components/becomePartner/Step4Form';
-import Step5Form from '../../components/becomePartner/Step5Form';
-import Step6Form from '../../components/becomePartner/Step6Form';
-import Step7Form from '../../components/becomePartner/Step7Form';
+const BusinessScreen = () => {
+    const navigation = useNavigation()
+    const { API_BASE_URL } = useContext(AppContext);
 
-const AddBusinessScreen = () => {
-  const {
-    fetchFormStatus,
-    formStatus,
-    formStatusLoading,
-  } = useContext(AppContext);
+    const [businessList, setBusinessList] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-  const [step, setStep] = useState(1);
-  const totalSteps = 6;
-  const scrollRef = useRef(null);
 
-  const [status, setStatus] = useState({
-    1: 'pending',
-    2: 'pending',
-    3: 'pending',
-    4: 'pending',
-    5: 'pending',
-    6: 'pending',
-  });
+    // const businessList = [
+    //     { id: 'BIZ-00123', name: 'Urban Café' },
+    //     { id: 'BIZ-00124', name: 'Tech Innovators Pvt. Ltd.' },
+    //     { id: 'BIZ-00125', name: 'Green Valley Mart' },
+    // ];
+    useEffect(() => {
+        fetchAllBusinesses();
+    }, []);
 
-  const formNames = [
-    'Business Details',
-    'Contacts Details',
-    'Business Timing',
-    'Select Category',
-    'Photos & Videos',
-    'Verify Documents'
-  ];
+    const fetchAllBusinesses = async () => {
+        try {
+            setLoading(true);
+            const token = await AsyncStorage.getItem("token");
+            const response = await axios.get(`${API_BASE_URL}/user/partner_forms/all_business`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-  const scrollToTop = () => scrollRef.current?.scrollTo({ y: 0, animated: true });
+            if (response.data?.status) {
+                setBusinessList(response.data.existBusiness || []);
+            }
+        } catch (error) {
+            console.error(" Failed to fetch businesses:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const nextStep = (submitted = true) => {
-    setStep(prev => {
-      if (prev > 0 && prev <= totalSteps) {
-        setStatus(prevStatus => ({
-          ...prevStatus,
-          [prev]: submitted ? 'completed' : 'skipped'
-        }));
-      }
-      const next = Math.min(prev + 1, totalSteps);
-      setTimeout(scrollToTop, 50);
-      return next;
-    });
-  };
 
-  const prevStep = () => {
-    setStep(prev => {
-      const back = Math.max(prev - 1, 1);
-      setTimeout(scrollToTop, 50);
-      return back;
-    });
-  };
-
-  // ✅ Fetch form status from context
-  useFocusEffect(
-    useCallback(() => {
-      fetchFormStatus();
-      setTimeout(scrollToTop, 50);
-    }, [])
-  );
-
-  // ✅ Whenever formStatus updates, update step circles
-  React.useEffect(() => {
-    if (formStatus) {
-      setStatus({
-        1: formStatus.business_details ? 'completed' : 'pending',
-        2: formStatus.contact_details ? 'completed' : 'pending',
-        3: formStatus.business_timing ? 'completed' : 'pending',
-        4: formStatus.business_category ? 'completed' : 'pending',
-        5: formStatus.photos_videos ? 'completed' : 'pending',
-        6: formStatus.document_upload ? 'completed' : 'pending',
-      });
-    }
-  }, [formStatus]);
-
-  const renderStep = () => {
-    switch (step) {
-      case 1: return <Step2Form onNext={() => nextStep(true)} />;
-      case 2: return <Step3Form onNext={() => nextStep(true)} />;
-      case 3: return <Step4Form onNext={() => nextStep(true)} />;
-      case 4: return <Step5Form onNext={() => nextStep(true)} />;
-      case 5: return <Step6Form onNext={() => nextStep(true)} />;
-      case 6: return <Step7Form onNext={() => nextStep(true)} />;
-      default: return null;
-    }
-  };
-
-  return (
-    <>
-      <StepFormsHeader />
-
-      {step > 0 && (
-        <View style={styles.headerContainer}>
-          <View style={styles.progressContainer}>
-            {formNames.map((name, index) => {
-              const formStep = index + 1;
-              const st = status[formStep];
-              const isCompleted = st === 'completed';
-              const isSkipped = st === 'skipped';
-              const isActive = step === formStep;
-
-              return (
-                <View key={formStep} style={styles.stepWrapper}>
-                  <View
-                    style={[
-                      styles.stepCircle,
-                      isCompleted ? styles.completed :
-                      isSkipped ? styles.skipped :
-                      isActive ? styles.active :
-                      styles.pending
-                    ]}
-                  >
-                    <Text style={styles.stepTextInside}>
-                      {isCompleted ? '✓' : isSkipped ? '–' : formStep}
-                    </Text>
-                  </View>
-
-                  <Text style={styles.stepLabel}>
-                    {name}
-                    {index === 0 && <Text style={styles.mandatoryStar}> *</Text>}
-                  </Text>
-
-                  {index < formNames.length - 1 && (
-                    <View
-                      style={[
-                        styles.stepLine,
-                        isCompleted ? styles.completedLine : styles.pendingLine
-                      ]}
-                    />
-                  )}
-                </View>
-              );
-            })}
-          </View>
-        </View>
-      )}
-
-      <ScrollView
-        ref={scrollRef}
-        style={styles.container}
-        contentContainerStyle={{ paddingBottom: 36 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {step > 1 && (
-          <TouchableOpacity activeOpacity={0.85} onPress={prevStep} style={styles.prevBtn}>
-            <View style={styles.prevContent}>
-              <Image
-                source={require('../../assets/images/backArrow.png')}
-                style={styles.prevIcon}
-              />
-              <Text style={styles.prevText}>Previous Form</Text>
+    if (loading) {
+        return (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <Text>Loading businesses...</Text>
             </View>
-          </TouchableOpacity>
-        )}
+        );
+    }
 
-        {renderStep()}
+    
+   
 
-        {step > 1 && (
-          <TouchableOpacity
-            style={styles.skipBtn}
-            onPress={() => nextStep(false)}
-          >
-            <Text style={styles.skipText}>Skip for Now</Text>
-          </TouchableOpacity>
-        )}
-      </ScrollView>
-    </>
-  );
+
+    return (
+        <View style={styles.mainContainer}>
+            {/* Header */}
+            <StepFormsHeader title="Your Businesses" />
+
+            {/* Content */}
+            <ScrollView contentContainerStyle={styles.container}>
+                <Text style={styles.subtitle}>Manage your business profiles</Text>
+                {
+                    (businessList.length === 0) && (
+                        <Text style={{ textAlign: 'center', color: '#7A7A7A', marginTop: 20 }}>
+                            No businesses found. Please add a new business.
+                        </Text>
+                    )
+                }
+
+                {/* Business List */}
+                <View style={styles.listWrapper}>
+                    {businessList.map((item, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            activeOpacity={0.8}
+                            style={styles.businessCard}
+                            onPress={async () => {
+                                const bizId = item?.businessId?._id;
+                                if (bizId) {
+                                    await AsyncStorage.setItem("businessId", bizId);
+                                }
+                                navigation.navigate("BecomePartnerFormScreen", { businessId: bizId });
+                            }}
+                        >
+                            <Text style={styles.businessName}>{item.businessName}</Text>
+                            <Text style={styles.businessId}>ID: {item?.businessId?._id}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+                {/* Add New Business */}
+                <TouchableOpacity
+                    activeOpacity={0.9}
+                    style={styles.addNewButton}
+                    //   onPress={() => navigation.navigate('BecomePartnerFormScreen')}
+                    onPress={async () => {
+                        await AsyncStorage.removeItem("businessId");
+                        navigation.navigate("BecomePartnerFormScreen");
+                    }}
+                >
+                    <Text style={styles.addNewText}>+ Add New Business</Text>
+                </TouchableOpacity>
+            </ScrollView>
+        </View>
+    );
 };
 
-export default AddBusinessScreen;
+export default BusinessScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 10, paddingTop: 10, backgroundColor: "#fff" },
-  headerContainer: { backgroundColor: '#fff', paddingVertical: 12, borderBottomWidth: 1, borderColor: '#eee' },
-  progressContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 6, marginHorizontal: 6, zIndex: 2 },
-  stepWrapper: { flex: 1, alignItems: 'center', paddingHorizontal: 4 },
-  stepCircle: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center', zIndex: 3 },
-  stepTextInside: { color: '#fff', fontWeight: '700', fontSize: 12 },
-  completed: { backgroundColor: '#27ae60' },
-  skipped: { backgroundColor: '#f39c12' },
-  active: { backgroundColor: '#155DFC' },
-  pending: { backgroundColor: '#d3d3d3' },
-  stepLabel: { fontSize: 10, color: '#555', marginTop: 6, textAlign: 'center', width: 70 },
-  mandatoryStar: {
-    color: '#E53935',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  stepLine: { position: 'absolute', top: 15, right: -45, width: 90, height: 4, borderRadius: 2, zIndex: 1 },
-  completedLine: { backgroundColor: '#27ae60' },
-  pendingLine: { backgroundColor: '#d3d3d3' },
-
-  prevBtn: {
-    backgroundColor: '#F6F8FB',
-    borderWidth: 1,
-    borderColor: '#E0E4EA',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignSelf: 'flex-start',
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  prevContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  prevIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#155DFC',
-    marginRight: 8,
-  },
-  prevText: {
-    color: '#155DFC',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-
-  skipBtn: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 14, marginHorizontal: 10 },
-  skipText: { color: '#555', fontSize: 15, fontWeight: '500' },
+    mainContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    container: {
+        flexGrow: 1,
+        backgroundColor: '#fff',
+        paddingHorizontal: 14,
+        paddingTop: 12,
+        paddingBottom: 40,
+    },
+    subtitle: {
+        fontSize: 13,
+        color: '#5B5B5B',
+        textAlign: 'center',
+        marginBottom: 14,
+    },
+    listWrapper: {
+        width: '100%',
+    },
+    businessCard: {
+        backgroundColor: '#F7F9FF',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#D8E1FF',
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        marginBottom: 10,
+    },
+    businessName: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#0A0A0A',
+        marginBottom: 2,
+    },
+    businessId: {
+        fontSize: 12,
+        color: '#7A7A7A',
+    },
+    addNewButton: {
+        marginTop: 18,
+        backgroundColor: '#155DFC',
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    addNewText: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '600',
+    },
 });

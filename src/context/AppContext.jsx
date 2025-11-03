@@ -15,7 +15,6 @@ export const AppProvider = ({ children }) => {
   // ERROR HANDLER
   // ==============================================================
   const [networkError, setNetworkError] = useState(false);
-
   const handleApiError = (error, defaultMessage = "Something went wrong") => {
     console.error("API Error:", error?.response?.data || error?.message || error);
     let message = defaultMessage;
@@ -125,20 +124,23 @@ export const AppProvider = ({ children }) => {
   // ==============================================================
   const [businessCategory, setBusinessCategory] = useState(null);
   const [businessCategoryLoading, setBusinessCategoryLoading] = useState(false);
-
   const fetchBusinessCategory = async () => {
     setBusinessCategoryLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
       const response = await axios.get(
-        `${API_BASE_URL}/user/partner_forms/business_category`,
+        `${API_BASE_URL}/user/categories/get-categories`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      console.log('====================================');
+      console.log("categories : " , response);
+      console.log('====================================');
       setBusinessCategory(response.data?.data || null);
       setNetworkError(false);
     } catch (error) {
       const msg = handleApiError(error, "Failed to fetch business category");
-      console.error("❌ Business Category Error:", msg);
+      console.error(" Business Category Error:", msg);
       setBusinessCategory(null);
     } finally {
       setBusinessCategoryLoading(false);
@@ -200,13 +202,13 @@ export const AppProvider = ({ children }) => {
   // ==============================================================
   const [formStatus, setFormStatus] = useState(null);
   const [formStatusLoading, setFormStatusLoading] = useState(false);
-
   const fetchFormStatus = async () => {
     setFormStatusLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
+      const businessId = await AsyncStorage.getItem("businessId");
       const response = await axios.get(
-        `${API_BASE_URL}/user/partner_forms/form_status`,
+        `${API_BASE_URL}/user/partner_forms/form_status?businessId=${businessId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log('====================================');
@@ -216,7 +218,7 @@ export const AppProvider = ({ children }) => {
       setNetworkError(false);
     } catch (error) {
       const msg = handleApiError(error, "Failed to fetch form completion status");
-      console.error("❌ Form Status Error:", msg);
+      console.error(" Form Status Error:", msg);
       setFormStatus(null);
     } finally {
       setFormStatusLoading(false);

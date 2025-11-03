@@ -1,77 +1,223 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Image } from "react-native";
+import React, { useState, useEffect, useContext, useCallback } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppContext } from "../../context/AppContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 const Step5Form = ({ onNext }) => {
-  const [selectedQuickCategories, setSelectedQuickCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("Gym & Fitness");
+  const { API_BASE_URL, handleApiError, fetchBusinessCategory, businessCategory } =
+    useContext(AppContext);
 
-  const quickCategories = ["AC Repair", "Beauty Salon", "Electronics", "Restaurant"];
-  const subcategories = ["Gym", "Yoga", "Zumba", "Personal Training"];
+  const [categoryId, setCategoryId] = useState("");
+  const [subCategories, setSubCategories] = useState([]);
+  const [availableSubs, setAvailableSubs] = useState([]); // ✅ fetched subcategories
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [businessId, setBusinessId] = useState(null);
 
-  const toggleQuickCategory = (item) => {
-    if (selectedQuickCategories.includes(item)) {
-      setSelectedQuickCategories(selectedQuickCategories.filter((i) => i !== item));
+  // 🧩 Fetch businessId
+  useEffect(() => {
+    const loadBusinessId = async () => {
+      const savedId = await AsyncStorage.getItem("businessId");
+      if (savedId) setBusinessId(savedId);
+    };
+    loadBusinessId();
+  }, []);
+
+  // 🧩 Fetch main categories on screen focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchBusinessCategory();
+    }, [])
+  );
+
+  // 🧩 Fetch subcategories when categoryId changes
+  useEffect(() => {
+    if (!categoryId) {
+      setAvailableSubs([]);
+      return;
+    }
+    const fetchSubcategories = async () => {
+      try {
+        setLoading(true);
+        const token = await AsyncStorage.getItem("token");
+        const res = await axios.get(
+          `${API_BASE_URL}/user/categories/get-subcategories?categoryId=${categoryId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (res.data?.data) {
+          setAvailableSubs(res.data.data);
+        } else {
+          setAvailableSubs([]);
+        }
+      } catch (error) {
+        const msg = handleApiError(error, "Failed to load subcategories");
+        Alert.alert("Error", msg);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSubcategories();
+  }, [categoryId]);
+
+  // 🧩 Select/Deselect subcategory
+  const toggleSubCategory = (subId) => {
+    if (subCategories.includes(subId)) {
+      setSubCategories(subCategories.filter((id) => id !== subId));
     } else {
-      setSelectedQuickCategories([...selectedQuickCategories, item]);
+      setSubCategories([...subCategories, subId]);
     }
   };
 
-  const handleSaveAndContinue = () => {
-    onNext && onNext();
+  // 🧩 Save selected category + subcategories
+  const handleSaveAndContinue = async () => {
+    if (!categoryId) {
+      Alert.alert("Validation", "Please select a category first.");
+      return;
+    }
+    if (subCategories.length === 0) {
+      Alert.alert("Validation", "Please select at least one subcategory.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const token = await AsyncStorage.getItem("token");
+
+      const payload = {
+        categoryId,
+        subCategories,
+        businessId,
+      };
+
+      const res = await axios.post(
+        `${API_BASE_URL}/user/partner_forms/business_category`,
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (res.data) {
+        Alert.alert("Success", "Business category saved successfully!");
+        onNext && onNext();
+      }
+    } catch (error) {
+      const msg = handleApiError(error, "Failed to save business category");
+      Alert.alert("Error", msg);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#155DFC" />
+        <Text style={styles.loaderText}>Loading subcategories...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
       <Text style={styles.title}>Select Category</Text>
-      <Text style={styles.subtitle}>Choose your business category and services</Text>
+      <Text style={styles.subtitle}>
+        Choose your business category and services
+      </Text>
 
-      {/* Business Category */}
+      {/* Category Selector */}
       <Text style={styles.label}>Select Business Category</Text>
-      <TouchableOpacity activeOpacity={0.7} style={styles.dropdown}>
-        <Text style={styles.dropdownText}>{selectedCategory}</Text>
-        <Image
-          source={require("../../assets/images/downArrow.png")}  
-          style={styles.dropdownIcon}
-        />
-      </TouchableOpacity>
-
-      {/* Quick Select Categories */}
-      <Text style={styles.label}>Select Subcategories</Text>
       <View style={styles.quickContainer}>
-        {quickCategories.map((item) => (
+        {businessCategory?.map((cat) => (
           <TouchableOpacity
-            key={item}
+            key={cat._id}
             style={[
               styles.quickItem,
-              selectedQuickCategories.includes(item) && styles.quickSelected,
+              categoryId === cat._id && styles.quickSelected,
             ]}
-            onPress={() => toggleQuickCategory(item)}
+            onPress={() => {
+              setCategoryId(cat._id);
+              setSubCategories([]);
+            }}
           >
             <Text
               style={[
                 styles.quickText,
-                selectedQuickCategories.includes(item) && styles.quickTextSelected,
+                categoryId === cat._id && styles.quickTextSelected,
               ]}
             >
-              {item}
+              {cat.name}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
       {/* Subcategories */}
-      {/* <Text style={styles.label}>Select Subcategories</Text>
-      <Text style={styles.helperText}>You can select multiple services</Text>
+      <Text style={[styles.label, { marginTop: 10 }]}>
+        Select Subcategories
+      </Text>
 
-      {subcategories.map((item) => (
-        <View key={item} style={styles.inputBox}>
-          <Text style={styles.inputText}>{item}</Text>
+      {loading ? (
+        <View style={styles.loader}>
+          <ActivityIndicator size="small" color="#155DFC" />
+          <Text style={styles.loaderText}>Loading subcategories...</Text>
         </View>
-      ))} */}
+      ) : availableSubs.length > 0 ? (
+        <View style={styles.quickContainer}>
+          {availableSubs.map((sub) => (
+            <TouchableOpacity
+              key={sub._id}
+              style={[
+                styles.quickItem,
+                subCategories.includes(sub._id) && styles.quickSelected,
+              ]}
+              onPress={() => toggleSubCategory(sub._id)}
+            >
+              <Text
+                style={[
+                  styles.quickText,
+                  subCategories.includes(sub._id) && styles.quickTextSelected,
+                ]}
+              >
+                {sub.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.noDataBox}>
+          {/* <Image
+            source={require("../../assets/images/emptyBox.png")} // 🔹 optional placeholder image
+            style={styles.noDataImg}
+            resizeMode="contain"
+          /> */}
+          <Text style={styles.noDataText}>No subcategories available</Text>
+        </View>
+      ) }
 
-      {/* Save and Continue Button */}
-      <TouchableOpacity style={styles.saveBtn} onPress={handleSaveAndContinue}>
-        <Text style={styles.saveText}>Save and Continue</Text>
+      {/* Save and Continue */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        style={[styles.saveBtn, saving && { opacity: 0.6 }]}
+        onPress={handleSaveAndContinue}
+        disabled={saving}
+      >
+        <Text style={styles.saveText}>
+          {saving ? "Saving..." : "Save and Continue"}
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -80,45 +226,10 @@ const Step5Form = ({ onNext }) => {
 export default Step5Form;
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#000",
-  },
-  subtitle: {
-    fontSize: 13,
-    color: "#555",
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 13,
-    color: "#000",
-    fontWeight: "500",
-    marginBottom: 8,
-  },
-  dropdown: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderColor: "#d3d3d3",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-  },
-  dropdownText: {
-    color: "#000",
-    fontSize: 14,
-  },
-  dropdownIcon: {
-    width: 16,
-    height: 16,
-    tintColor: "#555",
-  },
+  container: { backgroundColor: "#fff", padding: 15 },
+  title: { fontSize: 18, fontWeight: "600", color: "#000" },
+  subtitle: { fontSize: 13, color: "#555", marginBottom: 20 },
+  label: { fontSize: 13, color: "#000", fontWeight: "500", marginBottom: 8 },
   quickContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -131,44 +242,35 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
   },
-  quickSelected: {
-    backgroundColor: "#0056ff",
-  },
-  quickText: {
-    color: "#000",
-    fontSize: 13,
-  },
-  quickTextSelected: {
-    color: "#fff",
-  },
-  helperText: {
-    fontSize: 12,
-    color: "#777",
-    marginBottom: 10,
-  },
-  inputBox: {
-    borderWidth: 1,
-    borderColor: "#d3d3d3",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    marginBottom: 12,
-  },
-  inputText: {
-    color: "#000",
-    fontSize: 14,
-  },
+  quickSelected: { backgroundColor: "#0056ff" },
+  quickText: { color: "#000", fontSize: 13 },
+  quickTextSelected: { color: "#fff" },
   saveBtn: {
     backgroundColor: "#0056ff",
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: "center",
-    // marginTop: 20,
-    // marginBottom: 30,
   },
-  saveText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+  saveText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  loaderText: { marginTop: 10, color: "#555" },
+  noDataBox: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f9fafc",
+    borderRadius: 10,
+    paddingVertical: 30,
+    marginVertical: 10,
+  },
+  noDataImg: {
+    width: 60,
+    height: 60,
+    tintColor: "#ccc",
+    marginBottom: 10,
+  },
+  noDataText: {
+    fontSize: 14,
+    color: "#777",
+    fontWeight: "500",
   },
 });

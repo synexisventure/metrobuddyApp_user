@@ -19,7 +19,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { requestCameraPermission, requestGalleryPermission } from "../../utils/permissions";
 
-
 const Step2Form = ({ onNext, userId }) => {
   // ✅ Use from context
   const {
@@ -41,6 +40,19 @@ const Step2Form = ({ onNext, userId }) => {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
 
+  const resetForm = () => {
+    setBusinessName("");
+    setPincode("");
+    setPlotNo("");
+    setStreet("");
+    setLandmark("");
+    setArea("");
+    setCity("");
+    setState("");
+    setLogo(null);
+  };
+
+
   // media states
   const [logo, setLogo] = useState(null);
 
@@ -52,7 +64,20 @@ const Step2Form = ({ onNext, userId }) => {
 
   // 🧩 On mount, fetch data from context
   useEffect(() => {
+    resetForm();
     fetchBusinessDetails();
+  }, []);
+
+  //  business id state 
+  const [businessId, setBusinessId] = useState(null);
+  useEffect(() => {
+    const loadBusinessId = async () => {
+      if (!businessId) {
+        const savedId = await AsyncStorage.getItem("businessId");
+        if (savedId) setBusinessId(savedId);
+      }
+    };
+    loadBusinessId();
   }, []);
 
   // 🧠 When businessDetails from context updates, fill the form
@@ -142,7 +167,34 @@ const Step2Form = ({ onNext, userId }) => {
 
     try {
       setLoading(true);
+
+      const token = await AsyncStorage.getItem("token");
+      let currentBusinessId = businessId;
+      // If no business id — register first
+      if (!currentBusinessId) {
+        const registerRes = await axios.post(
+          `${API_BASE_URL}/user/partner_forms/register_business`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        console.log('====================================');
+        console.log("register new business  : ", registerRes.data?.businessId);
+        console.log('====================================');
+
+        if (registerRes.data?.businessId) {
+          currentBusinessId = registerRes.data.businessId;
+          setBusinessId(currentBusinessId);
+          await AsyncStorage.setItem("businessId", currentBusinessId);
+          console.log("✅ Registered New Business:", currentBusinessId);
+        } else {
+          throw new Error("Failed to register business");
+        }
+      }
+
+      // below form submission 
       const formData = new FormData();
+      formData.append("businessId", currentBusinessId);
       formData.append("userId", userId);
       formData.append("businessName", businessName);
       formData.append("pincode", pincode);
@@ -161,7 +213,6 @@ const Step2Form = ({ onNext, userId }) => {
         });
       }
 
-      const token = await AsyncStorage.getItem("token");
       const response = await axios.post(
         `${API_BASE_URL}/user/partner_forms/business_details`,
         formData,
