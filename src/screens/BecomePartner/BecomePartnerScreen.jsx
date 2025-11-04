@@ -5,6 +5,7 @@ import {
     View,
     TouchableOpacity,
     ScrollView,
+    ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import StepFormsHeader from '../../components/becomePartner/StepFormsHeader';
@@ -14,17 +15,25 @@ import axios from 'axios';
 
 const BusinessScreen = () => {
     const navigation = useNavigation()
-    const { API_BASE_URL } = useContext(AppContext);
+    const { API_BASE_URL,
+        setBusinessDetails,
+        setContactDetails,
+        setBusinessTiming,
+        setBusinessCategory,
+        setBusinessProducts,
+        setBusinessMedia,
+        setBusinessDocuments,
+    } = useContext(AppContext);
 
     const [businessList, setBusinessList] = useState([]);
     const [loading, setLoading] = useState(false);
-
 
     // const businessList = [
     //     { id: 'BIZ-00123', name: 'Urban Café' },
     //     { id: 'BIZ-00124', name: 'Tech Innovators Pvt. Ltd.' },
     //     { id: 'BIZ-00125', name: 'Green Valley Mart' },
     // ];
+
     useEffect(() => {
         fetchAllBusinesses();
     }, []);
@@ -36,6 +45,8 @@ const BusinessScreen = () => {
             const response = await axios.get(`${API_BASE_URL}/user/partner_forms/all_business`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
+            console.log("your all business : ", response);
 
             if (response.data?.status) {
                 setBusinessList(response.data.existBusiness || []);
@@ -52,13 +63,10 @@ const BusinessScreen = () => {
         return (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
                 <Text>Loading businesses...</Text>
+                {/* <LoadingOverlay/> */}
             </View>
         );
     }
-
-    
-   
-
 
     return (
         <View style={styles.mainContainer}>
@@ -88,7 +96,8 @@ const BusinessScreen = () => {
                                 if (bizId) {
                                     await AsyncStorage.setItem("businessId", bizId);
                                 }
-                                navigation.navigate("BecomePartnerFormScreen", { businessId: bizId });
+                                // navigation.navigate("BecomePartnerFormScreen", { businessId: bizId }); 
+                                navigation.navigate("DashboardScreen");
                             }}
                         >
                             <Text style={styles.businessName}>{item.businessName}</Text>
@@ -101,10 +110,18 @@ const BusinessScreen = () => {
                 <TouchableOpacity
                     activeOpacity={0.9}
                     style={styles.addNewButton}
-                    //   onPress={() => navigation.navigate('BecomePartnerFormScreen')}
+
                     onPress={async () => {
                         await AsyncStorage.removeItem("businessId");
-                        navigation.navigate("BecomePartnerFormScreen");
+                        await setBusinessDetails(null);
+                        await setBusinessDetails,
+                            await setContactDetails,
+                            await setBusinessTiming,
+                            await setBusinessCategory,
+                            await setBusinessProducts,
+                            await setBusinessMedia,
+                            await setBusinessDocuments,
+                            navigation.navigate("BecomePartnerFormScreen");
                     }}
                 >
                     <Text style={styles.addNewText}>+ Add New Business</Text>

@@ -25,7 +25,6 @@ const Step2Form = ({ onNext, userId }) => {
     API_BASE_URL,
     IMAGE_BASE_URL,
     businessDetails,
-    businessDetailsLoading,
     fetchBusinessDetails,
     handleApiError,
   } = useContext(AppContext);
@@ -39,6 +38,8 @@ const Step2Form = ({ onNext, userId }) => {
   const [area, setArea] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
+
+  const [businessDetailsLoading, setBusinessDetailsLoading] = useState(false);
 
   const resetForm = () => {
     setBusinessName("");
@@ -64,9 +65,15 @@ const Step2Form = ({ onNext, userId }) => {
 
   // 🧩 On mount, fetch data from context
   useEffect(() => {
-    resetForm();
-    fetchBusinessDetails();
+    const loadData = async () => {
+      resetForm();
+      setBusinessDetailsLoading(true);
+      await fetchBusinessDetails();
+      setBusinessDetailsLoading(false);
+    };
+    loadData();
   }, []);
+
 
   //  business id state 
   const [businessId, setBusinessId] = useState(null);

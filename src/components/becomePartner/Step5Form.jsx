@@ -15,12 +15,17 @@ import { AppContext } from "../../context/AppContext";
 import { useFocusEffect } from "@react-navigation/native";
 
 const Step5Form = ({ onNext }) => {
-  const { API_BASE_URL, handleApiError, fetchBusinessCategory, businessCategory } =
-    useContext(AppContext);
+  const { API_BASE_URL,
+    handleApiError,
+    fetchBusinessGlobalCategory,
+    businessGlobalCategory,
+    businessCategory,
+    fetchBusinessCategory,
+  } = useContext(AppContext);
 
   const [categoryId, setCategoryId] = useState("");
   const [subCategories, setSubCategories] = useState([]);
-  const [availableSubs, setAvailableSubs] = useState([]); // ✅ fetched subcategories
+  const [availableSubs, setAvailableSubs] = useState([]); // fetched subcategories
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [businessId, setBusinessId] = useState(null);
@@ -37,9 +42,29 @@ const Step5Form = ({ onNext }) => {
   // 🧩 Fetch main categories on screen focus
   useFocusEffect(
     useCallback(() => {
-      fetchBusinessCategory();
+      const loadData = async () => {
+        setLoading(true);
+        await fetchBusinessGlobalCategory();
+        await fetchBusinessCategory();
+        setLoading(false);
+      }
+      loadData();
     }, [])
   );
+
+
+  // selecting category and subcategories if already saved
+  useEffect(() => {
+    if (businessCategory) {
+      console.log("Preselecting category:", businessCategory); 
+      if (businessCategory.categoryId) {
+        setCategoryId(businessCategory.categoryId);
+      }
+      if (businessCategory.subCategories) {
+        setSubCategories(businessCategory.subCategories);
+      }
+    }
+  }, [businessCategory]);
 
   // 🧩 Fetch subcategories when categoryId changes
   useEffect(() => {
@@ -141,7 +166,7 @@ const Step5Form = ({ onNext }) => {
       {/* Category Selector */}
       <Text style={styles.label}>Select Business Category</Text>
       <View style={styles.quickContainer}>
-        {businessCategory?.map((cat) => (
+        {businessGlobalCategory?.map((cat) => (
           <TouchableOpacity
             key={cat._id}
             style={[
@@ -206,7 +231,7 @@ const Step5Form = ({ onNext }) => {
           /> */}
           <Text style={styles.noDataText}>No subcategories available</Text>
         </View>
-      ) }
+      )}
 
       {/* Save and Continue */}
       <TouchableOpacity

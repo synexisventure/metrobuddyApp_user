@@ -20,7 +20,7 @@ import {
 } from "../../utils/permissions";
 
 const Step6Form = ({ onNext }) => {
-  const { API_BASE_URL, handleApiError } = useContext(AppContext);
+  const { API_BASE_URL,IMAGE_BASE_URL, handleApiError, businessMedia, setBusinessMedia } = useContext(AppContext);
 
   const [photos, setPhotos] = useState([]);
   const [video, setVideo] = useState(null);
@@ -31,13 +31,38 @@ const Step6Form = ({ onNext }) => {
   const [activeType, setActiveType] = useState(null);
 
   // 🔹 Load business ID
+  // useEffect(() => {
+  //   const loadBusinessId = async () => {
+  //     const savedId = await AsyncStorage.getItem("businessId");
+  //     if (savedId) setBusinessId(savedId);
+  //   };
+  //   loadBusinessId();
+  // }, []);
   useEffect(() => {
     const loadBusinessId = async () => {
       const savedId = await AsyncStorage.getItem("businessId");
       if (savedId) setBusinessId(savedId);
     };
     loadBusinessId();
-  }, []);
+
+    // 🧩 Preload existing media from context
+    if (businessMedia?.photos?.length) {
+      const existingPhotos = businessMedia.photos.map((p) => ({
+        uri: `${IMAGE_BASE_URL}/uploads/businessMedia/${p.url}`,
+        type: "image/jpeg",
+      }));
+      setPhotos(existingPhotos);
+    }
+
+    if (businessMedia?.videos?.length) {
+      const existingVideo = businessMedia.videos[0];
+      setVideo({
+        uri: `${IMAGE_BASE_URL}/uploads/businessMedia/${existingVideo.url}`, 
+        type: "video/mp4",
+      });
+    }
+  }, [businessMedia]);
+
 
   // 📸 File selection logic
   const handleSelect = async (type) => {
@@ -134,7 +159,10 @@ const Step6Form = ({ onNext }) => {
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+    <ScrollView showsVerticalScrollIndicator={false}
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 20 }}
+    >
       <Text style={styles.title}>Photos & Videos</Text>
       <Text style={styles.subtitle}>
         Optional - Showcase your business with images
@@ -229,7 +257,7 @@ const Step6Form = ({ onNext }) => {
           { id: "gallery", label: "Gallery" },
         ]}
       />
-    </ScrollView> 
+    </ScrollView>
   );
 };
 
@@ -245,7 +273,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderWidth: 1,
     borderColor: "#dce5ff",
-    marginBottom: 25, 
+    marginBottom: 25,
   },
   proTipTitle: { fontSize: 14, fontWeight: "600", color: "#0056ff" },
   proTipText: { fontSize: 13, color: "#000", lineHeight: 18, marginTop: 6 },

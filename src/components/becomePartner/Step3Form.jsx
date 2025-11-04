@@ -15,8 +15,8 @@ import { AppContext } from "../../context/AppContext";
 import { isValidEmail, isValidMobile } from "../../utils/validators";
 
 const Step3Form = ({ onNext }) => {
-  const { API_BASE_URL, handleApiError } = useContext(AppContext);
- 
+  const { API_BASE_URL, handleApiError, fetchContactDetails, contactDetails } = useContext(AppContext);
+
   const [primaryMobile, setPrimaryMobile] = useState("");
   // const [primaryEmail, setPrimaryEmail] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
@@ -27,59 +27,46 @@ const Step3Form = ({ onNext }) => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
 
-  // ⬇️ Fetch existing contact details
-  const fetchContactDetails = async () => {
-    try {
+  useEffect(() => {
+    const loadData = async () => {
       setFetching(true);
-      const token = await AsyncStorage.getItem("token");
-      const resp = await axios.get(
-        `${API_BASE_URL}/user/partner_forms/contact_details`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
 
-      const data = resp.data?.data;
-      if (data) {
-        // setPrimaryEmail(data.primaryEmail || "");
-        setWhatsappNumber(data.whatsappNumber || "");
-        setAdditionalPhones(data.additionalPhones?.length ? data.additionalPhones : [""]);
-        setAdditionalEmails(data.additionalEmails?.length ? data.additionalEmails : [""]);
-
-        if (data.whatsappNumber && data.whatsappNumber === data.primaryMobile) {
-          setIsWhatsappSame(true);
-        }
-      }
-    } catch (err) {
-      const msg = handleApiError(err, "Failed to fetch contact details");
-      console.log("Fetch error:", msg);
-    } finally {
-      setFetching(false);
-    }
-  };
-
-  // ⬇️ Fetch primary mobile from AsyncStorage
-  const fetchPrimaryMobile = async () => {
-    try {
+      // Load primary mobile from AsyncStorage
       const storedMobile = await AsyncStorage.getItem("userPhone");
       if (storedMobile) {
         setPrimaryMobile(storedMobile);
         if (isWhatsappSame) setWhatsappNumber(storedMobile);
       }
-    } catch (err) {
-      console.log("Error fetching userMobile:", err);
-    }
-  };
 
-  useEffect(() => {
-    fetchPrimaryMobile();
-    fetchContactDetails();
+      // Fetch contact details from context
+      await fetchContactDetails();
+
+      setFetching(false);
+    };
+
+    loadData();
   }, []);
 
-  // ✅ Auto-sync WhatsApp number if checkbox is checked
+  // prefill form when contactDetails change
+  useEffect(() => {
+    if (contactDetails && Object.keys(contactDetails).length > 0) {
+      setWhatsappNumber(contactDetails.whatsappNumber || ""); 
+      setAdditionalPhones(
+        contactDetails.additionalPhones?.length ? contactDetails.additionalPhones : [""]
+      );
+      setAdditionalEmails(
+        contactDetails.additionalEmails?.length ? contactDetails.additionalEmails : [""]
+      );
+    }
+  }, [contactDetails]);
+
+
+  //  Auto-sync WhatsApp number if checkbox is checked
   useEffect(() => {
     if (isWhatsappSame) setWhatsappNumber(primaryMobile);
   }, [primaryMobile, isWhatsappSame]);
 
-  // ✅ Validation
+  //  Validation
   const validateFields = () => {
     const newErrors = {};
 
@@ -113,8 +100,7 @@ const Step3Form = ({ onNext }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-
-  // ✅ Add/Remove additional contacts
+  //  Add/Remove additional contacts
   const addPhone = () => setAdditionalPhones([...additionalPhones, ""]);
   const addEmail = () => setAdditionalEmails([...additionalEmails, ""]);
   const removePhone = (index) => {
@@ -128,7 +114,7 @@ const Step3Form = ({ onNext }) => {
     setAdditionalEmails(newEmails.length ? newEmails : [""]);
   };
 
-    //  business id state 
+  //  business id state 
   const [businessId, setBusinessId] = useState(null);
   useEffect(() => {
     const loadBusinessId = async () => {
@@ -140,7 +126,7 @@ const Step3Form = ({ onNext }) => {
     loadBusinessId();
   }, []);
 
-  // ✅ Submit form
+  //  Submit form
   const handleSaveAndContinue = async () => {
     if (!validateFields()) {
       Alert.alert("Validation", "Please fill all required fields.");
@@ -240,7 +226,9 @@ const Step3Form = ({ onNext }) => {
             if (newState) setWhatsappNumber(primaryMobile);
             else setWhatsappNumber("");
           }}
-        />
+        >
+
+        </TouchableOpacity>
         <Text style={styles.checkboxLabel}>
           Is WhatsApp number same as primary mobile?
         </Text>

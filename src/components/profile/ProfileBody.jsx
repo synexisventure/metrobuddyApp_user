@@ -7,6 +7,13 @@ const ProfileBody = () => {
 
   const items = [
     {
+      id: 4,
+      icon: require("../../assets/images/franchise.png"),
+      title: "Become a Partner",
+      subtitle: "List your business",
+      screen: "BecomePartnerScreen",
+    },
+    {
       id: 1,
       icon: require("../../assets/images/heart.png"),
       title: "Saved Businesses",
@@ -27,13 +34,6 @@ const ProfileBody = () => {
       subtitle: "Exclusive discounts",
       badge: "New",
       screen: "OfferAndDealsScreen",
-    },
-    {
-      id: 4,
-      icon: require("../../assets/images/franchise.png"),
-      title: "Become a Partner",
-      subtitle: "List your business",
-      screen: "BecomePartnerScreen",
     },
     {
       id: 5,

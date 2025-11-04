@@ -20,7 +20,7 @@ import { useNavigation } from "@react-navigation/native";
 
 const Step7Form = ({ onSubmit }) => {
   const navigation = useNavigation();
-  const { API_BASE_URL, handleApiError } = useContext(AppContext);
+  const { API_BASE_URL, handleApiError,  businessDocuments , fetchBusinessDocuments} = useContext(AppContext);
 
   const [docs, setDocs] = useState({
     msmeCertificate: null,
@@ -186,7 +186,9 @@ const Step7Form = ({ onSubmit }) => {
 
   return (
     <>
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.container}
+      contentContainerStyle={{ paddingBottom: 20 }}
+      >
         <Text style={styles.title}>Verification Documents</Text>
         <Text style={styles.subtitle}>
           Upload documents to verify your business

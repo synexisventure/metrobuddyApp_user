@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  ActivityIndicator,
   Alert,
 } from "react-native";
 import axios from "axios";
@@ -14,146 +13,82 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppContext } from "../../context/AppContext";
 
 const Step4Form = ({ onNext }) => {
-  const {
-    API_BASE_URL,
-    handleApiError,
-    fetchBusinessTiming,
-    businessTiming,
-    businessTimingLoading,
-  } = useContext(AppContext);
+  const { API_BASE_URL, handleApiError } = useContext(AppContext);
 
-  const [selectedDays, setSelectedDays] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
-  const [timeSlots, setTimeSlots] = useState([{ openAt: "", closeAt: "" }]);
+  const [timeSlots, setTimeSlots] = useState([{ day: [], openAt: "", closeAt: "" }]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  // ✅ Fetch existing data
-  useEffect(() => {
-    const loadData = async () => {
-      await fetchBusinessTiming();
-    };
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (businessTiming) {
-      setSelectedDays(businessTiming.workingDays || []);
-      setSelectAll(
-        businessTiming.workingDays?.length === days.length ? true : false
-      );
-      setTimeSlots(
-        businessTiming.timeSlots?.length
-          ? businessTiming.timeSlots
-          : [{ openAt: "", closeAt: "" }]
-      );
-    }
-  }, [businessTiming]);
-
-  // ✅ Toggle day selection
-  const toggleDay = (day) => {
-    let updatedDays;
-    if (selectedDays.includes(day)) {
-      updatedDays = selectedDays.filter((d) => d !== day);
-    } else {
-      updatedDays = [...selectedDays, day];
-    }
-    setSelectedDays(updatedDays);
-    setSelectAll(updatedDays.length === days.length);
-  };
-
-  // ✅ Select all
-  const handleSelectAll = () => {
-    if (selectAll) {
-      setSelectedDays([]);
-    } else {
-      setSelectedDays(days);
-    }
-    setSelectAll(!selectAll);
-  };
-
-  // ✅ Add/Remove slot
+  // ✅ Add / Remove Slot
   const addSlot = () =>
-    setTimeSlots([...timeSlots, { openAt: "", closeAt: "" }]);
+    setTimeSlots([...timeSlots, { day: [], openAt: "", closeAt: "" }]);
+
   const removeSlot = (index) => {
     const updated = [...timeSlots];
     updated.splice(index, 1);
-    setTimeSlots(updated.length ? updated : [{ openAt: "", closeAt: "" }]);
+    setTimeSlots(updated.length ? updated : [{ day: [], openAt: "", closeAt: "" }]);
   };
 
   // ✅ Validation
   const validate = () => {
     const newErrors = {};
-
-    if (!selectedDays.length)
-      newErrors.workingDays = "Please select at least one working day.";
-
     const slotErrors = timeSlots.map((slot) => {
       const sErr = {};
-      if (!slot.openAt.trim()) sErr.openAt = "Opening time required.";
-      if (!slot.closeAt.trim()) sErr.closeAt = "Closing time required.";
+      if (!slot.day.length) sErr.day = "Select at least one day";
+      if (!slot.openAt.trim()) sErr.openAt = "Opening time required";
+      if (!slot.closeAt.trim()) sErr.closeAt = "Closing time required";
       return sErr;
     });
-    if (slotErrors.some((e) => e.openAt || e.closeAt))
+    if (slotErrors.some((s) => s.day || s.openAt || s.closeAt))
       newErrors.timeSlots = slotErrors;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // ✅ POST API Integration
+  // ✅ Save & Continue
   const handleSaveAndContinue = async () => {
     if (!validate()) {
-      Alert.alert("Validation", "Please all required fields.");
+      Alert.alert("Validation Error", "Please fill all required fields properly.");
       return;
     }
 
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("token");
+      const businessId = await AsyncStorage.getItem("businessId");
+
+      if (!businessId) {
+        Alert.alert("Error", "Business ID not found in storage.");
+        return;
+      }
 
       const payload = {
-        workingDays: selectedDays,
-        timeSlots: timeSlots.filter(
-          (t) => t.openAt.trim() && t.closeAt.trim()
-        ),
+        businessId,
+        timeSlots: timeSlots.filter((t) => t.day.length && t.openAt && t.closeAt),
       };
 
-      console.log("payload : " , payload);
-      
+      await axios.post(`${API_BASE_URL}/user/partner_forms/business_timing`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      await axios.post(
-        `${API_BASE_URL}/user/partner_forms/business_timing`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      Alert.alert("Success", "Business timing saved successfully!");
+      Alert.alert("✅ Success", "Business timing saved successfully!");
       onNext && onNext();
-    } catch (err) {
-      const msg = handleApiError(err, "Failed to save business timing");
+    } catch (error) {
+      const msg = handleApiError(error, "Failed to save business timing");
       Alert.alert("Error", msg);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ renderInput helper
+  // ✅ Render input
   const renderInput = (label, value, setValue, error) => (
     <View style={{ marginBottom: 6 }}>
       <Text style={styles.timeLabel}>{label}</Text>
       <TextInput
-        style={[
-          styles.input,
-          error && { borderColor: "#ff4d4d", backgroundColor: "#fff6f6" },
-        ]}
+        style={[styles.input, error && { borderColor: "#ff4d4d", backgroundColor: "#fff6f6" }]}
         placeholder={label}
         placeholderTextColor="#888"
         value={value}
@@ -163,64 +98,47 @@ const Step4Form = ({ onNext }) => {
     </View>
   );
 
-  // Loader
-  if (businessTimingLoading) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", marginTop: 60 }}>
-        <ActivityIndicator size="large" color="#0056ff" />
-        <Text style={{ marginTop: 10 }}>Loading business timing...</Text>
-      </View>
-    );
-  }
-
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
       <Text style={styles.title}>Business Timing</Text>
-      <Text style={styles.subtitle}>Select your working days & hours</Text>
+      <Text style={styles.subtitle}>Select working days and hours</Text>
 
-      {/* Days */}
-      <Text style={styles.label}>Select Working Days</Text>
-      <View style={styles.daysContainer}>
-        {days.map((day) => (
-          <TouchableOpacity
-            key={day}
-            style={[
-              styles.dayBtn,
-              selectedDays.includes(day) && styles.daySelected,
-            ]}
-            onPress={() => toggleDay(day)}
-          >
-            <Text
-              style={[
-                styles.dayText,
-                selectedDays.includes(day) && styles.dayTextSelected,
-              ]}
-            >
-              {day}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      {errors.workingDays && (
-        <Text style={styles.errorText}>{errors.workingDays}</Text>
-      )}
-
-      {/* Select All */}
-      <TouchableOpacity
-        style={styles.checkboxContainer}
-        onPress={handleSelectAll}
-        activeOpacity={0.7}
-      >
-        <View style={[styles.checkbox, selectAll && styles.checkboxChecked]}>
-          {selectAll && <View style={styles.innerTick} />}
-        </View>
-        <Text style={styles.checkboxLabel}>Select All Days</Text>
-      </TouchableOpacity>
-
-      {/* Time Slots */}
-      <Text style={styles.label}>Time Slots</Text>
       {timeSlots.map((slot, index) => (
-        <View key={index} style={{ marginBottom: 12 }}>
+        <View key={index} style={styles.slotContainer}>
+          {/* Day selection */}
+          <Text style={styles.label}>Select Days</Text>
+          <View style={styles.dayRow}>
+            {days.map((day) => {
+              const selected = slot.day.includes(day);
+              return (
+                <TouchableOpacity
+                  key={day}
+                  style={[styles.dayBtn, selected && styles.daySelected]}
+                  onPress={() => {
+                    const updated = [...timeSlots];
+
+                    if (!Array.isArray(updated[index].day)) updated[index].day = [];
+                    if (selected) {
+                      updated[index].day = updated[index].day.filter((d) => d !== day);
+                    } else {
+                      updated[index].day = [...updated[index].day, day];
+                    }
+
+                    setTimeSlots(updated);
+                  }}
+                >
+                  <Text style={[styles.dayText, selected && styles.dayTextSelected]}>
+                    {day}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          {errors.timeSlots?.[index]?.day && (
+            <Text style={styles.errorText}>{errors.timeSlots[index].day}</Text>
+          )}
+
+          {/* Open / Close time */}
           <View style={styles.timeContainer}>
             <View style={styles.timeBox}>
               {renderInput(
@@ -257,11 +175,10 @@ const Step4Form = ({ onNext }) => {
         </View>
       ))}
 
-      {/* <TouchableOpacity onPress={addSlot}>
-        <Text style={styles.addSlot}>+ Add Another Time Slot</Text>
-      </TouchableOpacity> */}
+      <TouchableOpacity onPress={addSlot}>
+        <Text style={styles.addSlot}>+ Add Another Slot</Text>
+      </TouchableOpacity>
 
-      {/* Save Button */}
       <TouchableOpacity
         style={[styles.saveBtn, loading && { opacity: 0.6 }]}
         onPress={handleSaveAndContinue}
@@ -281,64 +198,27 @@ const styles = StyleSheet.create({
   container: { backgroundColor: "#fff", paddingHorizontal: 10 },
   title: { fontSize: 18, fontWeight: "600", color: "#000" },
   subtitle: { fontSize: 13, color: "#555", marginBottom: 20 },
+  slotContainer: { marginBottom: 20, borderBottomWidth: 1, borderColor: "#eee", paddingBottom: 15 },
   label: { fontSize: 13, color: "#000", fontWeight: "500", marginBottom: 8 },
-  daysContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 15,
-  },
+  dayRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 10 },
   dayBtn: {
-    width: 50,
-    height: 50,
+    width: 45,
+    height: 45,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: "#d3d3d3",
+    borderColor: "#ccc",
     alignItems: "center",
     justifyContent: "center",
   },
   daySelected: { backgroundColor: "#0056ff", borderColor: "#0056ff" },
   dayText: { color: "#000", fontWeight: "500" },
   dayTextSelected: { color: "#fff" },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-    marginTop: 5,
-  },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderWidth: 1,
-    borderColor: "#999",
-    borderRadius: 4,
-    marginRight: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkboxChecked: { backgroundColor: "#0056ff", borderColor: "#0056ff" },
-  innerTick: {
-    width: 8,
-    height: 8,
-    backgroundColor: "#fff",
-    borderRadius: 2,
-  },
-  checkboxLabel: { color: "#000", fontSize: 13 },
-  timeContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 5,
-  },
+  timeContainer: { flexDirection: "row", justifyContent: "space-between" },
   timeBox: { width: "48%" },
-  timeLabel: {
-    color: "#000",
-    fontSize: 13,
-    fontWeight: "500",
-    marginBottom: 6,
-  },
+  timeLabel: { color: "#000", fontSize: 13, fontWeight: "500", marginBottom: 6 },
   input: {
     borderWidth: 1,
-    borderColor: "#d3d3d3",
+    borderColor: "#ccc",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 10,
