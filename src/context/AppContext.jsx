@@ -129,9 +129,7 @@ export const AppProvider = ({ children }) => {
           })
         )
       );
-
       console.log("responses form : ", responses);
-
 
       // Extract each form’s data
       const [
@@ -236,6 +234,7 @@ export const AppProvider = ({ children }) => {
         setBusinessDocuments,
 
         // All forms fetcher
+        allBusinessLoading,
         fetchAllBusinessSteps,
 
         // Individual form fetchers

@@ -1,25 +1,37 @@
-import React, { useContext, useEffect } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import React, { useContext, useState } from "react";
+import { StyleSheet, View, ScrollView, Text } from "react-native";
+
 import HeaderCard from "../../components/businessDashboard/HeaderCard";
-import BusinessDetailsCard from "../../components/businessDashboard/BusinessDetailsCard";
-import ContactCard from "../../components/businessDashboard/ContactCard";
-import TimingCard from "../../components/businessDashboard/TimingCard";
-import CategoryCard from "../../components/businessDashboard/CategoryCard";
-import ProductCard from "../../components/businessDashboard/ProductCard";
-import DocumentsCard from "../../components/businessDashboard/DocumentsCard";
-import PhotosVideosCard from "../../components/businessDashboard/PhotosVideosCard";
-import { AppContext } from "../../context/AppContext";
+
+import DashboardHeader from "../../components/businessDashboard2/DashboardHeader";
+import DashboardDetails from "../../components/businessDashboard2/DashboardDetails";
+import DashboardFilter from "../../components/businessDashboard2/DashboardFilter";
+import DashboardOverview from "../../components/businessDashboard2/DashboardOverview";
+import DashboardReviews from "../../components/businessDashboard2/DashboardReviews";
+import DashboardPhotos from "../../components/businessDashboard2/DashboardPhotos";
+import StepFormsHeader from "../../components/becomePartner/StepFormsHeader";
+
+import DashboardPersonalWallet from "../../components/businessDashboard2/DashboardPersonalWallet";
+
 import { useFocusEffect } from "@react-navigation/native";
+import { AppContext } from "../../context/AppContext";
+import SubscriptionScreen from "../Subscription/SubscriptionScreen";
+import CurrentSubscriptionScreen from "../Subscription/CurrentSubcriptionScreen";
 
-const BusinessDashboardScreen = ({ navigation }) => {
-    const { fetchAllBusinessSteps, businessDetails, contactDetails, businessTiming, businessCategory, businessProducts, businessDocuments, businessMedia } = useContext(AppContext);
+const BusinessSingleScreen = () => {
+    const [activeTab, setActiveTab] = useState("Overview");
 
-    const businessInfo = {
-        name: "Bharat Traders",
-        owner: "Rahul Verma",
-        type: "Wholesale",
-        description: "Leading supplier of hardware and tools.",
-    };
+    const {
+        allBusinessLoading,
+        fetchAllBusinessSteps,
+        businessDetails,
+        contactDetails,
+        businessTiming,
+        businessCategory,
+        businessProducts,
+        businessDocuments,
+        businessMedia 
+    } = useContext(AppContext);
 
     useFocusEffect(
         React.useCallback(() => {
@@ -27,41 +39,58 @@ const BusinessDashboardScreen = ({ navigation }) => {
                 await fetchAllBusinessSteps();
                 console.log(" business details : ", businessDetails);
             })()
-        }, []
-        ));
+        }, [])
+    );
 
-    return (<>
-        {/* <StepFormsHeader title="Your Businesses" /> */}
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            {/* <HeaderCard
-                name={businessInfo.name}
-                owner={businessInfo.owner}
-            /> */}
-            <HeaderCard
-                name={businessDetails?.businessName || "Business Name"}
-                owner={businessDetails?.businessId || "Owner Name"}
-                onBellPress={() => navigation.navigate("Notifications")}
+    return (
+        <>
+            <StepFormsHeader
+                title="Your Business"
+                subtitle="Manage your business profiles"
             />
+            <ScrollView
+                style={styles.container}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
+                <DashboardHeader />
+                <DashboardDetails />
+                <DashboardFilter activeTab={activeTab} setActiveTab={setActiveTab} />
 
-            <BusinessDetailsCard
-                details={businessInfo}
-
-            />
-
-            {/* Similar for other parts */}
-            <ContactCard />
-            <TimingCard />
-            <CategoryCard />
-            <ProductCard />
-            <PhotosVideosCard />
-            <DocumentsCard />
-        </ScrollView>
-    </>
+                {activeTab === "Overview" && <DashboardOverview />}
+                {activeTab === "Reviews" && <DashboardReviews />}
+                {activeTab === "Photos" && <DashboardPhotos />}
+                {activeTab === "Subscription" && <CurrentSubscriptionScreen/> }
+                {activeTab === "Personal Wallet" && <DashboardPersonalWallet/> }
+            </ScrollView>
+        </>
     );
 };
 
-export default BusinessDashboardScreen;
+export default BusinessSingleScreen;
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f8f9fa", padding: 10 },
+    container: {
+        flex: 1,
+        backgroundColor: "#fff",
+    },
+    scrollContent: {
+        paddingBottom: 20,
+    },
+    walletContainer: {
+        padding: 20,
+        alignItems: "center",
+    },
+    walletText: {
+        fontSize: 15,
+        color: "#555",
+    },
+    photoContainer: {
+        padding: 20,
+        alignItems: "center",
+    },
+    photoText: {
+        fontSize: 15,
+        color: "#555",
+    },
 });

@@ -20,7 +20,7 @@ import {
 } from "../../utils/permissions";
 
 const Step6Form = ({ onNext }) => {
-  const { API_BASE_URL,IMAGE_BASE_URL, handleApiError, businessMedia, setBusinessMedia } = useContext(AppContext);
+  const { API_BASE_URL, IMAGE_BASE_URL, handleApiError, businessMedia, setBusinessMedia } = useContext(AppContext);
 
   const [photos, setPhotos] = useState([]);
   const [video, setVideo] = useState(null);
@@ -47,17 +47,20 @@ const Step6Form = ({ onNext }) => {
 
     // 🧩 Preload existing media from context
     if (businessMedia?.photos?.length) {
-      const existingPhotos = businessMedia.photos.map((p) => ({
-        uri: `${IMAGE_BASE_URL}/uploads/businessMedia/${p.url}`,
-        type: "image/jpeg",
-      }));
+      const existingPhotos = businessMedia.photos.map((p) => {
+        const cleanPath = p.url.replace(/^\/?uploads\//, '');
+        return {
+          uri: `${IMAGE_BASE_URL}/uploads/businessMedia/${cleanPath}`,
+          type: "image/jpeg",
+        };
+      });
       setPhotos(existingPhotos);
     }
 
     if (businessMedia?.videos?.length) {
       const existingVideo = businessMedia.videos[0];
       setVideo({
-        uri: `${IMAGE_BASE_URL}/uploads/businessMedia/${existingVideo.url}`, 
+        uri: `${IMAGE_BASE_URL}/uploads/businessMedia/${existingVideo.url}`,
         type: "video/mp4",
       });
     }
@@ -142,6 +145,8 @@ const Step6Form = ({ onNext }) => {
       Alert.alert("Success", "Photos & Videos uploaded successfully!");
       onNext && onNext();
     } catch (error) {
+      console.log("err msg is : ", error);
+
       const msg = handleApiError(error, "Failed to upload media");
       Alert.alert("Error", msg);
     } finally {

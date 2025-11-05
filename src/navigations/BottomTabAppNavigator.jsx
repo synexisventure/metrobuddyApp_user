@@ -9,6 +9,7 @@ import CategoryScreen from "../screens/category/CategoryScreen";
 import FavoritesScreen from "../screens/favorites/FavoritesScreen";
 import FranchiseScreen from "../screens/franchise/FranchiseScreen";
 import LeadsScreen from "../screens/leads/LeadsScreen";
+import BecomePartnerScreen from '../screens/BecomePartner/BecomePartnerScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -20,6 +21,8 @@ const getIconSource = (name) => {
             return require('../assets/images/home.png');
         case 'Categories':
             return require('../assets/images/category.png');
+        case 'Business':
+            return require('../assets/images/plus.png');
         case 'Favorites':
             return require('../assets/images/heart.png');
         case 'Franchise':
@@ -51,7 +54,7 @@ const BottomTabAppNavigator = () => {
                     backgroundColor: '#fff',
                     height: 60,
                     paddingBottom: 5,
-                    paddingTop: 5, 
+                    paddingTop: 5,
                     // Optional: remove top border line if desired
                     // borderTopWidth: 0,
                 },
@@ -61,7 +64,7 @@ const BottomTabAppNavigator = () => {
                 tabBarLabelStyle: {
                     // fontSize: 12,
                     fontSize: labelFontSize,
-                    fontWeight: '600', // Matches the bold look in the screenshot
+                    fontWeight: '600', 
                 },
                 tabBarHideOnKeyboard: true,
             }}
@@ -94,7 +97,7 @@ const BottomTabAppNavigator = () => {
                     ),
                 }}
             />
-            <Tab.Screen
+            {/* <Tab.Screen
                 name="Favorites"
                 component={FavoritesScreen}
                 options={{
@@ -103,6 +106,21 @@ const BottomTabAppNavigator = () => {
                         <View style={{ width: 25, height: 25, }}>
                             <Image
                                 source={getIconSource('Favorites')}
+                                style={{ tintColor: color, width: 25, height: 22 }} // Image is 20x20
+                            />
+                        </View> // View is 30x30, but how are the contents aligned?
+                    ),
+                }}
+            /> */}
+            <Tab.Screen
+                name="Business"
+                component={BecomePartnerScreen}
+                options={{
+                    tabBarLabel: 'Business',
+                    tabBarIcon: ({ color }) => (
+                        <View style={{ width: 25, height: 25, }}>
+                            <Image
+                                source={getIconSource('Business')}
                                 style={{ tintColor: color, width: 25, height: 22 }} // Image is 20x20
                             />
                         </View> // View is 30x30, but how are the contents aligned?

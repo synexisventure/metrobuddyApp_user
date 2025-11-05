@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -7,15 +7,21 @@ import {
     ScrollView,
     ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import StepFormsHeader from '../../components/becomePartner/StepFormsHeader';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppContext } from '../../context/AppContext';
 import axios from 'axios';
 
-const BusinessScreen = () => {
+import StepFormsHeader from '../../components/becomePartner/StepFormsHeader';
+import BecomePartnerCard from "../../components/becomePartner/BecomePartnerCard";
+
+const BecomePartnerScreen = () => {
     const navigation = useNavigation()
     const { API_BASE_URL,
+
+        businessDetails,
+        businussTiming,
+
         setBusinessDetails,
         setContactDetails,
         setBusinessTiming,
@@ -28,15 +34,17 @@ const BusinessScreen = () => {
     const [businessList, setBusinessList] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // const businessList = [
-    //     { id: 'BIZ-00123', name: 'Urban Café' },
-    //     { id: 'BIZ-00124', name: 'Tech Innovators Pvt. Ltd.' },
-    //     { id: 'BIZ-00125', name: 'Green Valley Mart' },
-    // ];
+     
+    useFocusEffect(
+        useCallback(() => {
+            const loadData = async () => {
+                await fetchAllBusinesses();
+                console.log("business Details :", businessDetails);
+            };
 
-    useEffect(() => {
-        fetchAllBusinesses();
-    }, []);
+            loadData();
+        }, [businessDetails])
+    );
 
     const fetchAllBusinesses = async () => {
         try {
@@ -71,11 +79,16 @@ const BusinessScreen = () => {
     return (
         <View style={styles.mainContainer}>
             {/* Header */}
-            <StepFormsHeader title="Your Businesses" />
+            <StepFormsHeader 
+            
+            title="Your Businesses"
+            subtitle="Manage your business profiles"
+            
+            />
 
             {/* Content */}
             <ScrollView contentContainerStyle={styles.container}>
-                <Text style={styles.subtitle}>Manage your business profiles</Text>
+                {/* <Text style={styles.subtitle}>Manage your business profiles</Text> */}
                 {
                     (businessList.length === 0) && (
                         <Text style={{ textAlign: 'center', color: '#7A7A7A', marginTop: 20 }}>
@@ -91,17 +104,19 @@ const BusinessScreen = () => {
                             key={index}
                             activeOpacity={0.8}
                             style={styles.businessCard}
-                            onPress={async () => {
-                                const bizId = item?.businessId?._id;
-                                if (bizId) {
-                                    await AsyncStorage.setItem("businessId", bizId);
-                                }
-                                // navigation.navigate("BecomePartnerFormScreen", { businessId: bizId }); 
-                                navigation.navigate("DashboardScreen");
-                            }}
+                        // onPress={async () => {
+                        //     const bizId = item?.businessId?._id;
+                        //     if (bizId) {
+                        //         await AsyncStorage.setItem("businessId", bizId);
+                        //     }
+                        //     // navigation.navigate("BecomePartnerFormScreen", { businessId: bizId }); 
+                        //     navigation.navigate("DashboardScreen");
+                        // }}
                         >
-                            <Text style={styles.businessName}>{item.businessName}</Text>
-                            <Text style={styles.businessId}>ID: {item?.businessId?._id}</Text>
+                            {/* <Text style={styles.businessName}>{item.businessName}</Text>
+                            <Text style={styles.businessId}>ID: {item?.businessId?._id}</Text> */}
+                            <BecomePartnerCard
+                                data={item} />
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -114,14 +129,14 @@ const BusinessScreen = () => {
                     onPress={async () => {
                         await AsyncStorage.removeItem("businessId");
                         await setBusinessDetails(null);
-                        await setBusinessDetails,
-                            await setContactDetails,
-                            await setBusinessTiming,
-                            await setBusinessCategory,
-                            await setBusinessProducts,
-                            await setBusinessMedia,
-                            await setBusinessDocuments,
-                            navigation.navigate("BecomePartnerFormScreen");
+                        await setBusinessDetails(null);
+                        await setContactDetails(null);
+                        await setBusinessTiming(null);
+                        await setBusinessCategory(null);
+                        await setBusinessProducts(null);
+                        await setBusinessMedia(null);
+                        await setBusinessDocuments(null);
+                        navigation.navigate("BecomePartnerFormScreen");
                     }}
                 >
                     <Text style={styles.addNewText}>+ Add New Business</Text>
@@ -131,7 +146,7 @@ const BusinessScreen = () => {
     );
 };
 
-export default BusinessScreen;
+export default BecomePartnerScreen;
 
 const styles = StyleSheet.create({
     mainContainer: {
@@ -153,15 +168,10 @@ const styles = StyleSheet.create({
     },
     listWrapper: {
         width: '100%',
+        backgroundColor: '#fff',
     },
     businessCard: {
-        backgroundColor: '#F7F9FF',
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#D8E1FF',
-        paddingVertical: 10,
-        paddingHorizontal: 14,
-        marginBottom: 10,
+        backgroundColor: '#fff',
     },
     businessName: {
         fontSize: 15,

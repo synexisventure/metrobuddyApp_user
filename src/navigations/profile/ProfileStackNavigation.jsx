@@ -41,7 +41,7 @@ const ProfileStackNavigation = () => {
             <Stack.Screen name="RecentScreachesScreen" component={RecentScreachesScreen} />
             <Stack.Screen name="OfferAndDealsScreen" component={OfferAndDealsScreen} />
             <Stack.Screen name="BecomePartnerScreen" component={BecomePartnerScreen} />
-            <Stack.Screen name="BecomePartnerFormScreen" component={BecomePartnerFormScreen} />
+            {/* <Stack.Screen name="BecomePartnerFormScreen" component={BecomePartnerFormScreen} /> */}
             <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
 
             <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
@@ -50,16 +50,16 @@ const ProfileStackNavigation = () => {
             <Stack.Screen name="PrivacyAndSecurityScreen" component={PrivacyAndSecurityScreen} />
 
             {/* dashboard */}
-            <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
+            {/* <Stack.Screen name="DashboardScreen" component={DashboardScreen} /> */}
  
             {/* all forms navigaion */}
-            <Stack.Screen name="BusinessdetailsScreen" component={BusinessDetailsScreen} />
+            {/* <Stack.Screen name="BusinessdetailsScreen" component={BusinessDetailsScreen} />
             <Stack.Screen name="ContactDetailsScreen" component={ContactDetailsScreen} />
             <Stack.Screen name="BusinessTimingScreen" component={BusinessTimingScreen} />
             <Stack.Screen name="BusinessCategoryScreen" component={BusinessCategoryScreen} />
             <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
             <Stack.Screen name="PhotosVideoScreen" component={PhotosVideoScreen} />
-            <Stack.Screen name="UploadDocumentScreen" component={UploadDocumentScreen} />
+            <Stack.Screen name="UploadDocumentScreen" component={UploadDocumentScreen} /> */}
 
         </Stack.Navigator>
     )
