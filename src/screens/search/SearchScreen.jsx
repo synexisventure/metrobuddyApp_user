@@ -1,51 +1,96 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Switch, Image, Modal, ActivityIndicator } from 'react-native'
-import React, { useContext, useState } from 'react'
-import axios from 'axios'
+import {
+    StyleSheet,
+    Text,
+    View,
+    TextInput,
+    TouchableOpacity,
+    ScrollView,
+    Switch,
+    Image,
+    Modal,
+    ActivityIndicator,
+    Alert
+} from 'react-native';
+import React, { useContext, useState } from 'react';
+import axios from 'axios';
 import SearchCard from "../../components/search/SearchCard";
 import { AppContext } from '../../context/AppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import getLocationPermission from '../../utils/LocationPermission'; // import location util
 
 const SearchScreen = () => {
     const { API_BASE_URL } = useContext(AppContext);
 
-    const [searchQuery, setSearchQuery] = useState('') 
-    const [showFilters, setShowFilters] = useState(false)
-    const [ratingFilter, setRatingFilter] = useState(0)
-    const [selectedCity, setSelectedCity] = useState('')
-    const [radius, setRadius] = useState(15)
-    const [openNow, setOpenNow] = useState(false)
-    const [useCurrentLocation, setUseCurrentLocation] = useState(false)
-    const [businessList, setBusinessList] = useState([])
-    const [loading, setLoading] = useState(false)
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showFilters, setShowFilters] = useState(false);
+    const [ratingFilter, setRatingFilter] = useState(0);
+    const [selectedCity, setSelectedCity] = useState('');
+    const [radius, setRadius] = useState(15);
+    const [openNow, setOpenNow] = useState(false);
+    const [useCurrentLocation, setUseCurrentLocation] = useState(true);
+    const [businessList, setBusinessList] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [userLocation, setUserLocation] = useState(null); // store coords only when searched
 
-    const [userLocation, setUserLocation] = useState(null); // new state
+    const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'];
+    const ratings = [1, 2, 3, 4, 5];
+    const radiusOptions = [1, 2, 5, 10, 15, 20, 25, 30];
 
+    const SearchIcon = require('../../assets/images/search.png');
+    const FilterIcon = require('../../assets/images/filter.png');
+    const LocationIcon = require('../../assets/images/location.png');
+    const BusinessIcon = require('../../assets/images/bell.png');
+    const NavigateIcon = require('../../assets/images/bell.png');
+    const StarIcon = require('../../assets/images/star.png');
 
-    const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad']
-    const ratings = [1, 2, 3, 4, 5]
-    const radiusOptions = [1, 2, 5, 10, 15, 20, 25, 30]
-
-    const SearchIcon = require('../../assets/images/search.png')
-    const FilterIcon = require('../../assets/images/filter.png')
-    const LocationIcon = require('../../assets/images/location.png')
-    const BusinessIcon = require('../../assets/images/bell.png')
-    const NavigateIcon = require('../../assets/images/bell.png')
-    const StarIcon = require('../../assets/images/star.png')
-    const ClockIcon = require('../../assets/images/clock.png')
-
-    // 🔍 SEARCH FUNCTION
+    // 🔍 SEARCH FUNCTION — fetch coords only when pressing search
     // const handleSearch = async () => {
     //     if (!searchQuery.trim()) return;
 
+    //     // validation
+    //     if (!useCurrentLocation && !selectedCity) {
+    //         Alert.alert("Select City", "Please select a city or enable current location.");
+    //         return;
+    //     }
+
     //     setLoading(true);
+
     //     try {
+    //         const token = await AsyncStorage.getItem("token");
+
+    //         // Fetch location only when needed
+    //         if (useCurrentLocation && !userLocation) {
+    //             console.log("Fetching user coordinates before search...");
+    //             const coords = await getLocationPermission();
+    //             if (coords) {
+    //                 setUserLocation(coords);
+    //             } else {
+    //                 setLoading(false);
+    //                 Alert.alert(
+    //                     "Location required",
+    //                     "Couldn't get your location. Please enable GPS or select a city."
+    //                 );
+    //                 return;
+    //             }
+    //         }
+
     //         const body = {
     //             query: searchQuery.trim(),
-    //             latitude: 28.61,
-    //             longitude: 77.20
     //         };
 
-    //         const token = await AsyncStorage.getItem("token");
+    //         // Include location if available
+    //         if (useCurrentLocation && userLocation) {
+    //             body.latitude = userLocation.latitude;
+    //             body.longitude = userLocation.longitude;
+    //             body.radius = radius * 1000;
+    //         }
+
+    //         // Include city if selected
+    //         if (selectedCity) {
+    //             body.city = selectedCity;
+    //         }
+
+    //         console.log("my payload : ", body);
 
     //         const response = await axios.post(
     //             `${API_BASE_URL}/user/search`,
@@ -53,12 +98,12 @@ const SearchScreen = () => {
     //             {
     //                 headers: {
     //                     Authorization: `Bearer ${token}`,
-    //                     'Content-Type': 'application/json',
+    //                     "Content-Type": "application/json",
     //                 },
     //             }
     //         );
 
-    //         console.log("Search Response:", response);
+    //         console.log("Search Response:", response.data);
 
     //         if (response.data.success) {
     //             setBusinessList(response.data.data || []);
@@ -73,33 +118,42 @@ const SearchScreen = () => {
     //     }
     // };
 
+
     const handleSearch = async () => {
         if (!searchQuery.trim()) return;
+
+        // validation
+        if (!useCurrentLocation && !selectedCity) {
+            Alert.alert("Select City", "Please select a city or enable current location.");
+            return;
+        }
 
         setLoading(true);
 
         try {
             const token = await AsyncStorage.getItem("token");
 
-            // Build request body according to filters
+            // Static coordinates instead of fetching
+            const staticCoords = {
+                latitude: 28.897123785970944,
+                longitude: 77.19556187276137,
+            };
+
             const body = {
                 query: searchQuery.trim(),
             };
 
+            // Always send static location
+            body.latitude = staticCoords.latitude;
+            body.longitude = staticCoords.longitude;
+            body.radius = radius * 1000;
 
-            // If using current location
-            if (useCurrentLocation) {
-                body.latitude = 28.61;   // replace with actual GPS later
-                body.longitude = 77.20;
-                body.radius = radius * 1000; // backend expects meters
-            }
-
-            // If user picked a city
+            // Include city if selected
             if (selectedCity) {
                 body.city = selectedCity;
             }
 
-            console.log("my body of search : ", body);
+            console.log("my payload : ", body);
 
             const response = await axios.post(
                 `${API_BASE_URL}/user/search`,
@@ -127,33 +181,57 @@ const SearchScreen = () => {
         }
     };
 
+
+    // ✅ Handle toggle of current location
+    const handleToggleCurrentLocation = async (value) => {
+        setUseCurrentLocation(value);
+        if (value) {
+            setSelectedCity('');
+            setUserLocation(null); // location will be fetched on next search
+        } else {
+            if (!selectedCity) {
+                Alert.alert("Select City", "Please select a city or enable current location.");
+            }
+        }
+    };
+
+    // ✅ Apply filters (just closes modal for now)
     const applyFilters = () => {
-        setShowFilters(false)
+        if (!useCurrentLocation && !selectedCity) {
+            Alert.alert("Select City", "Please select a city or enable current location.");
+            return;
+        }
+
+        setShowFilters(false);
         console.log('Filters applied:', {
             ratingFilter,
             selectedCity,
             radius,
             openNow,
-            useCurrentLocation
-        })
-    }
+            useCurrentLocation,
+        });
+    };
 
+    // ✅ Clear filters (do not auto-fetch location)
     const clearFilters = () => {
-        setRatingFilter(0)
-        setSelectedCity('')
-        setRadius(5)
-        setOpenNow(false)
-        setUseCurrentLocation(false)
-    }
+        setRatingFilter(0);
+        setSelectedCity('');
+        setRadius(15);
+        setOpenNow(false);
+        setUseCurrentLocation(true);
+        setUserLocation(null);
+    };
 
     return (
         <View style={styles.container}>
             {/* 🔍 Search Header */}
             <View style={styles.searchContainer}>
-                {/* Search Bar with Button in Same Row */}
                 <View style={styles.searchRow}>
                     <View style={styles.searchInputContainer}>
-                        <Image source={SearchIcon} style={styles.searchIcon} />
+                        <Image 
+                        source={SearchIcon} 
+                        style={styles.searchIcon} 
+                        />
                         <TextInput
                             style={styles.searchInput}
                             placeholder="Search for businesses..."
@@ -167,25 +245,24 @@ const SearchScreen = () => {
                     <TouchableOpacity
                         style={[
                             styles.searchActionButton,
-                            searchQuery.trim() ? styles.activeSearchButton : styles.inactiveSearchButton
+                            searchQuery.trim() ? styles.activeSearchButton : styles.inactiveSearchButton,
                         ]}
                         onPress={handleSearch}
                         disabled={!searchQuery.trim()}
                     >
-                        <Text style={[
-                            styles.searchActionText,
-                            searchQuery.trim() ? styles.activeSearchText : styles.inactiveSearchText
-                        ]}>
+                        <Text
+                            style={[
+                                styles.searchActionText,
+                                searchQuery.trim() ? styles.activeSearchText : styles.inactiveSearchText,
+                            ]}
+                        >
                             Search
                         </Text>
                     </TouchableOpacity>
                 </View>
 
                 {/* Filter Button */}
-                <TouchableOpacity
-                    style={styles.filterButton}
-                    onPress={() => setShowFilters(true)}
-                >
+                <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilters(true)}>
                     <Image source={FilterIcon} style={styles.filterIcon} />
                     <Text style={styles.filterText}>Filters</Text>
                 </TouchableOpacity>
@@ -199,7 +276,7 @@ const SearchScreen = () => {
                 </View>
             )}
 
-            {/* 📋 Search Results */}
+            {/* 📋 Results */}
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {!loading && businessList.length === 0 && (
                     <View style={styles.emptyState}>
@@ -236,7 +313,7 @@ const SearchScreen = () => {
                         </View>
 
                         <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
-                            {/* 📍 Current Location Toggle */}
+                            {/* 📍 Location */}
                             <View style={styles.filterSection}>
                                 <View style={styles.filterHeader}>
                                     <Image source={LocationIcon} style={styles.filterIcon} />
@@ -246,14 +323,14 @@ const SearchScreen = () => {
                                     <Text style={styles.locationText}>Use Current Location</Text>
                                     <Switch
                                         value={useCurrentLocation}
-                                        onValueChange={setUseCurrentLocation}
+                                        onValueChange={handleToggleCurrentLocation}
                                         thumbColor={useCurrentLocation ? '#155DFC' : '#f4f3f4'}
                                         trackColor={{ false: '#767577', true: '#c6d9ff' }}
                                     />
                                 </View>
                             </View>
 
-                            {/* 🏙️ City Selection - Show only when NOT using current location */}
+                            {/* 🏙️ City */}
                             {!useCurrentLocation && (
                                 <View style={styles.filterSection}>
                                     <View style={styles.filterHeader}>
@@ -266,14 +343,14 @@ const SearchScreen = () => {
                                                 key={city}
                                                 style={[
                                                     styles.cityChip,
-                                                    selectedCity === city && styles.selectedCityChip
+                                                    selectedCity === city && styles.selectedCityChip,
                                                 ]}
                                                 onPress={() => setSelectedCity(city)}
                                             >
                                                 <Text
                                                     style={[
                                                         styles.cityText,
-                                                        selectedCity === city && styles.selectedCityText
+                                                        selectedCity === city && styles.selectedCityText,
                                                     ]}
                                                 >
                                                     {city}
@@ -284,7 +361,7 @@ const SearchScreen = () => {
                                 </View>
                             )}
 
-                            {/* 📏 Radius Filter - Show only when using current location */}
+                            {/* 📏 Radius */}
                             {useCurrentLocation && (
                                 <View style={styles.filterSection}>
                                     <View style={styles.filterHeader}>
@@ -300,14 +377,16 @@ const SearchScreen = () => {
                                                         key={km}
                                                         style={[
                                                             styles.radiusButton,
-                                                            radius === km && styles.selectedRadiusButton
+                                                            radius === km && styles.selectedRadiusButton,
                                                         ]}
                                                         onPress={() => setRadius(km)}
                                                     >
-                                                        <Text style={[
-                                                            styles.radiusButtonText,
-                                                            radius === km && styles.selectedRadiusButtonText
-                                                        ]}>
+                                                        <Text
+                                                            style={[
+                                                                styles.radiusButtonText,
+                                                                radius === km && styles.selectedRadiusButtonText,
+                                                            ]}
+                                                        >
                                                             {km} km
                                                         </Text>
                                                     </TouchableOpacity>
@@ -318,7 +397,7 @@ const SearchScreen = () => {
                                 </View>
                             )}
 
-                            {/* ⭐ Rating Filter */}
+                            {/* ⭐ Rating */}
                             <View style={styles.filterSection}>
                                 <View style={styles.filterHeader}>
                                     <Image source={StarIcon} style={styles.filterIcon} />
@@ -331,7 +410,7 @@ const SearchScreen = () => {
                                                 key={rate}
                                                 style={[
                                                     styles.ratingChip,
-                                                    ratingFilter === rate && styles.selectedRatingChip
+                                                    ratingFilter === rate && styles.selectedRatingChip,
                                                 ]}
                                                 onPress={() => setRatingFilter(rate)}
                                             >
@@ -339,13 +418,13 @@ const SearchScreen = () => {
                                                     source={StarIcon}
                                                     style={[
                                                         styles.ratingStarIcon,
-                                                        ratingFilter === rate && styles.selectedRatingStarIcon
+                                                        ratingFilter === rate && styles.selectedRatingStarIcon,
                                                     ]}
                                                 />
                                                 <Text
                                                     style={[
                                                         styles.ratingText,
-                                                        ratingFilter === rate && styles.selectedRatingText
+                                                        ratingFilter === rate && styles.selectedRatingText,
                                                     ]}
                                                 >
                                                     {rate}+
@@ -382,10 +461,12 @@ const SearchScreen = () => {
                 </View>
             </Modal>
         </View>
-    )
-}
+    );
+};
 
-export default SearchScreen
+export default SearchScreen;
+
+
 
 const styles = StyleSheet.create({
     container: {

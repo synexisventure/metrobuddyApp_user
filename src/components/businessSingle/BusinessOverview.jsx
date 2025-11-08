@@ -1,15 +1,45 @@
 import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 
-const BusinessOverview = () => {
+const BusinessOverview = ({ business, contact, timing }) => {
+
+  const formatAddress = (addr) => {
+    if (!addr) return 'NA';
+    const parts = [
+      addr.plotNo,
+      addr.street,
+      addr.landmark,
+      addr.area,
+      addr.city,
+      addr.state,
+      addr.pincode,
+    ].filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : 'NA';
+  };
+
+  const renderTiming = (timing) => {
+    if (!timing || !timing.timeSlots || timing.timeSlots.length === 0) return (
+      <View style={styles.row}>
+        <Image source={require('../../assets/images/clock.png')} style={styles.icon} />
+        <Text style={styles.infoText}>NA</Text>
+      </View>
+    );
+
+    return timing.timeSlots.map((slot, index) => (
+      <View key={index} style={styles.row}>
+        <Image source={require('../../assets/images/clock.png')} style={styles.icon} />
+        <Text style={styles.infoText}>
+          {slot.day?.join(', ') || 'NA'}: {slot.openAt || 'NA'} - {slot.closeAt || 'NA'}
+        </Text>
+      </View>
+    ));
+  };
+
   return (
     <View style={styles.container}>
       {/* About Section */}
       <Text style={styles.sectionTitle}>About</Text>
-      <Text style={styles.aboutText}>
-        Luxury hotel with world-class amenities and stunning city views. Perfect
-        for business and leisure travelers.
-      </Text>
+      <Text style={styles.aboutText}>{business?.businessName || 'NA'}</Text>
 
       <View style={styles.divider} />
 
@@ -18,56 +48,36 @@ const BusinessOverview = () => {
 
       {/* Address */}
       <View style={styles.row}>
-        <Image
-          source={require('../../assets/images/location.png')}
-          style={styles.icon}
-        />
+        <Image source={require('../../assets/images/location.png')} style={styles.icon} />
         <View style={{ flex: 1 }}>
-          <Text style={styles.infoText}>
-            123 Marine Drive, Mumbai Central, Mumbai
-          </Text>
-          <TouchableOpacity>
+          <Text style={styles.infoText}>{formatAddress(business?.address)}</Text>
+          {/* <TouchableOpacity>
             <Text style={styles.linkText}>Get Directions</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
 
       {/* Phone */}
       <View style={styles.row}>
-        <Image
-          source={require('../../assets/images/phone.png')}
-          style={styles.icon}
-        />
-        <Text style={styles.infoText}>+91 98765 43210</Text>
+        <Image source={require('../../assets/images/phone.png')} style={styles.icon} />
+        <Text style={styles.infoText}>{contact?.primaryMobile || 'NA'}</Text>
       </View>
 
-      {/* Availability */}
-      <View style={styles.row}>
-        <Image
-          source={require('../../assets/images/clock.png')}
-          style={styles.icon}
-        />
-        <Text style={styles.infoText}>24/7</Text>
-      </View>
+      {/* Timing */}
+      {renderTiming(timing)}
 
       {/* Website */}
       <View style={styles.row}>
-        <Image
-          source={require('../../assets/images/globe.png')}
-          style={styles.icon}
-        />
+        <Image source={require('../../assets/images/globe.png')} style={styles.icon} />
         <TouchableOpacity>
-          <Text style={styles.linkText}>www.example.com</Text>
+          <Text style={styles.linkText}>{business?.website || 'NA'}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Email */}
       <View style={styles.row}>
-        <Image
-          source={require('../../assets/images/mail.png')}
-          style={styles.icon}
-        />
-        <Text style={styles.infoText}>info@thegrandplazahotel.com</Text>
+        <Image source={require('../../assets/images/mail.png')} style={styles.icon} />
+        <Text style={styles.infoText}>{contact?.email || 'NA'}</Text>
       </View>
     </View>
   );

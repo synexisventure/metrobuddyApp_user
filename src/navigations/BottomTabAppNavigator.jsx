@@ -42,7 +42,7 @@ const getIconSource = (name) => {
 const BottomTabAppNavigator = () => {
 
     const showLeadsTab = true; // or condition from props/context
-    const labelFontSize = showLeadsTab ? 10 : 12;
+    const labelFontSize = showLeadsTab ? 12 : 12;
 
     return (
         <Tab.Navigator
@@ -52,7 +52,7 @@ const BottomTabAppNavigator = () => {
                 tabBarShowLabel: true,
                 tabBarStyle: {
                     backgroundColor: '#fff',
-                    height: 60,
+                    height: 70,
                     paddingBottom: 5,
                     paddingTop: 5,
                     // Optional: remove top border line if desired
@@ -62,8 +62,9 @@ const BottomTabAppNavigator = () => {
                 tabBarActiveTintColor: '#155DFC',
                 tabBarInactiveTintColor: '#999',
                 tabBarLabelStyle: {
-                    // fontSize: 12,
+                    // fontSize: 18,
                     fontSize: labelFontSize,
+                    color : "black",
                     fontWeight: '600', 
                 },
                 tabBarHideOnKeyboard: true,
@@ -78,7 +79,7 @@ const BottomTabAppNavigator = () => {
                         <Image
                             // Set size to 20x20
                             source={getIconSource('Home')}
-                            style={{ tintColor: color, width: 20, height: 20 }}
+                            style={{ tintColor: color, width: 30, height: 30 }}
                         />
                     ),
                 }}
@@ -92,7 +93,7 @@ const BottomTabAppNavigator = () => {
                         <Image
                             // Set size to 20x20
                             source={getIconSource('Categories')}
-                            style={{ tintColor: color, width: 20, height: 20 }}
+                            style={{ tintColor: color, width: 30, height: 30 }}
                         />
                     ),
                 }}
@@ -121,13 +122,13 @@ const BottomTabAppNavigator = () => {
                         <View style={{ width: 25, height: 25, }}>
                             <Image
                                 source={getIconSource('Business')}
-                                style={{ tintColor: color, width: 25, height: 22 }} // Image is 20x20
+                                style={{ tintColor: color, width: 30, height: 30 }} // Image is 20x20
                             />
                         </View> // View is 30x30, but how are the contents aligned?
                     ),
                 }}
             />
-            <Tab.Screen
+          {/*  <Tab.Screen
                 name="Leads"
                 component={LeadsScreen}
                 options={{
@@ -140,7 +141,7 @@ const BottomTabAppNavigator = () => {
                         />
                     ),
                 }}
-            />
+            />*/}
 
             <Tab.Screen
                 name="Franchise"
@@ -151,7 +152,7 @@ const BottomTabAppNavigator = () => {
                         <Image
                             // Set size to 20x20
                             source={getIconSource('Franchise')}
-                            style={{ tintColor: color, width: 20, height: 20 }}
+                            style={{ tintColor: color, width: 30, height: 30 }}
                         />
                     ),
                 }}
@@ -165,7 +166,7 @@ const BottomTabAppNavigator = () => {
                         <Image
                             // Set size to 20x20
                             source={getIconSource('Profile')}
-                            style={{ tintColor: color, width: 20, height: 20 }}
+                            style={{ tintColor: color, width: 30, height: 30 }}
                         />
                     ),
                 }}

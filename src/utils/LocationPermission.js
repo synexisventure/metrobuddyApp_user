@@ -1,81 +1,49 @@
-import { Platform, Alert } from 'react-native';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import { PermissionsAndroid, Platform, Alert, Linking } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 
 const getLocationPermission = async () => {
   try {
-    let permission;
-
     if (Platform.OS === 'android') {
-      permission = PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
-    } else if (Platform.OS === 'ios') {
-      permission = PERMISSIONS.IOS.LOCATION_WHEN_IN_USE;
-    }
-
-    // Check current permission
-    const status = await check(permission);
-    console.log('📍 Initial permission status:', status);
-
-    if (status === RESULTS.GRANTED) {
-      return getCurrentLocation();
-    }
-
-    // Request permission
-    const result = await request(permission);
-
-    if (result === RESULTS.GRANTED) {
-      console.log('✅ Permission granted now, fetching location...');
-      return getCurrentLocation();
-    } else {
-      Alert.alert(
-        'Permission Denied',
-        'Location permission is required to mark attendance.'
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
       );
-      return null;
+
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert('Permission Denied', 'Please allow location permission.');
+        return null;
+      }
     }
+
+    return await getCurrentLocation();
   } catch (err) {
-    console.error('Location permission error:', err);
+    console.error('Permission error:', err);
     return null;
   }
 };
 
-// const getCurrentLocation = () =>
-//   new Promise((resolve, reject) => {
-//     Geolocation.getCurrentPosition(
-//       (position) => resolve(position.coords),
-//       (error) => reject(error),
-//       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-//     );
-//   });
-
 const getCurrentLocation = () =>
   new Promise((resolve, reject) => {
-    console.log('🚀 Requesting location...');
+    console.log('📍 Getting coordinates...');
     Geolocation.getCurrentPosition(
-      (position) => {
-        console.log('✅ Got position:', position);
-        resolve(position.coords);
-      },
-      (error) => {
-        console.log('❌ First attempt failed:', error);
-        // Try again with lower accuracy
-        Geolocation.getCurrentPosition(
-          (pos2) => {
-            console.log('✅ Got position on retry:', pos2);
-            resolve(pos2.coords);
-          },
-          (err2) => {
-            console.log('❌ Second attempt also failed:', err2);
-            Alert.alert('Location Error', err2.message);
-            reject(err2);
-          },
-          { enableHighAccuracy: false, timeout: 30000, maximumAge: 10000 }
+      pos => resolve(pos.coords),
+      err => {
+        console.log('❌ Location error:', err);
+        Alert.alert(
+          'Location Error',
+          'GPS took too long to respond. Open Google Maps once, ensure High-accuracy mode, then retry.',
+          [
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+            { text: 'OK', style: 'cancel' },
+          ],
         );
+        reject(err);
       },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 }
+      {
+        enableHighAccuracy: true,
+        timeout: 60000,      // wait longer
+        maximumAge: 0,
+      },
     );
   });
-
-
 
 export default getLocationPermission;

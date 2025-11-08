@@ -1,18 +1,48 @@
-import React from "react";
-import { StyleSheet, View, Image } from "react-native";
+ import React, { useContext } from "react";
+import { StyleSheet, View, Image, Text } from "react-native";
+import { AppContext } from "../../context/AppContext";
 
-const BusinessPhotos = () => {
-  const photos = [
-    require("../../assets/images/images2/city.png"),
-    require("../../assets/images/images2/city.png"),
-    require("../../assets/images/images2/city.png"),
-  ];
+const BusinessPhotos = ({ media }) => {
+  const { IMAGE_BASE_URL } = useContext(AppContext);
+
+  const photos = media?.photos?.length > 0 ? media.photos : [];
+
+  const getImageUrl = (photo) => {
+    if (!photo) return null;
+
+    const urlString =
+      typeof photo === "string"
+        ? photo
+        : typeof photo?.url === "string"
+        ? photo.url
+        : null;
+
+    if (!urlString) return null;
+
+    const cleanPath = urlString.replace(/^\/?uploads\//, "");
+    console.log("try to view : " , `${IMAGE_BASE_URL}/uploads/businessMedia/${cleanPath}`);
+    
+    return `${IMAGE_BASE_URL}/uploads/businessMedia/${cleanPath}`;
+  };
+
+  if (photos.length === 0) {
+    return (
+      <View style={styles.noPhotos}>
+        <Text style={styles.noPhotosText}>No photos available</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {photos.map((img, index) => (
-        <View key={index} style={styles.imageWrapper}>
-          <Image source={img} style={styles.image} resizeMode="cover" />
+      {photos.map((photo, index) => (
+        <View key={photo._id || index} style={styles.imageWrapper}>
+          <Image
+            source={{ uri: getImageUrl(photo) }}
+            style={styles.image}
+            resizeMode="cover"
+            onError={(err) => console.log("Image load error:", err.nativeEvent)}
+          />
         </View>
       ))}
     </View>
@@ -40,5 +70,14 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: 12,
+  },
+  noPhotos: {
+    padding: 20,
+    alignItems: "center",
+  },
+  noPhotosText: {
+    fontSize: 14,
+    color: "#6b7280",
+    fontStyle: "italic",
   },
 });

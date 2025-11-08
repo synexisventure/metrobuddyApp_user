@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 const BusinessSingleFilter = ({ activeTab, setActiveTab }) => {
-  const tabs = ['Overview', 'Reviews', 'Photos'];
+  const tabs = ['Overview', 'Reviews', 'Photos' ,"Product"];
 
   return (
     <View style={styles.container}>

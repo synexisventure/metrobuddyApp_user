@@ -1,8 +1,15 @@
 // BusinessCard.js
-import React from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useContext } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { AppContext } from '../../context/AppContext';
 
 const BusinessCard = ({ business }) => {
+
+  const {IMAGE_BASE_URL} = useContext(AppContext);
+
+  const navigation = useNavigation();
+
   const formatAddress = (address) => {
     if (!address) return 'Address not available';
     
@@ -19,13 +26,25 @@ const BusinessCard = ({ business }) => {
     return parts.length > 0 ? parts.join(', ') : 'Address not available';
   };
 
+  const handlePress =()=>{
+    navigation.navigate("BusinessSingleScreen",
+      {
+        key : business,
+      }
+    )
+  }
+
   return (
-    <TouchableOpacity style={styles.businessCard}>
+    <TouchableOpacity 
+    style={styles.businessCard}
+    onPress= {handlePress}
+    >
       {/* Business Logo and Basic Info */}
       <View style={styles.cardHeader}>
         <View style={styles.logoContainer}>
           <Image 
-            source={require('../../assets/images/images2/city.png')}
+            // source={require('../../assets/images/images2/city.png')}
+            source={`${IMAGE_BASE_URL}/Uploads/businessImages/${business?.logo}`}
             style={styles.businessLogo}
           />
         </View>

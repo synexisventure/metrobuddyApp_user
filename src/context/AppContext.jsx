@@ -6,11 +6,11 @@ export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
 
-  const API_BASE_URL = "http://192.168.1.4:7000/api";
-  const IMAGE_BASE_URL = "http://192.168.1.4:7000";
+  // const API_BASE_URL = "http://192.168.1.4:7000/api";
+  // const IMAGE_BASE_URL = "http://192.168.1.4:7000";
 
-  //   const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
-  // const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com/";
+    const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
+  const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com/";
 
   // ERROR HANDLER 
   const [networkError, setNetworkError] = useState(false);
@@ -185,10 +185,7 @@ export const AppProvider = ({ children }) => {
   };
 
 
-  // Global Categories fetch
-  // ==============================================================
-  // STEP 5 — BUSINESS CATEGORY
-  // ==============================================================
+  // Global Categories fetch 
   const [businessGlobalCategory, setBusinessGlobalCategory] = useState(null);
   const [businessCategoryLoading, setBusinessCategoryLoading] = useState(false);
   const fetchBusinessGlobalCategory = async () => {
@@ -213,9 +210,9 @@ export const AppProvider = ({ children }) => {
       setBusinessCategoryLoading(false);
     }
   };
+ 
 
-  // PROVIDER EXPORT
-  // ==============================================================
+  // PROVIDER EXPORT 
   return (
     <AppContext.Provider
       value={{
