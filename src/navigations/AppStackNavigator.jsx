@@ -25,6 +25,9 @@ import PhotosVideoScreen from "../screens/stepFormsScreen/PhotosVideoScreen";
 import CurrentSubscriptionScreen from "../screens/Subscription/CurrentSubcriptionScreen";
 import SubscriptionScreen from "../screens/Subscription/SubscriptionScreen";
 
+// search
+import SearchScreen from "../screens/search/SearchScreen";
+
 const Stack = createNativeStackNavigator();
 
 const AppStackNavigator = () => {
@@ -55,6 +58,10 @@ const AppStackNavigator = () => {
 
             <Stack.Screen name="CurrentSubscriptionScreen" component={CurrentSubscriptionScreen} />
             <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
+
+            {/* search screen */}
+            <Stack.Screen name="SearchScreen" component={SearchScreen} />
+
 
         </Stack.Navigator>
     )

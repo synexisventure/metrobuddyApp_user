@@ -88,7 +88,7 @@ const CommonHeader = ({ animatedScrollY }) => {
             <TouchableOpacity
                 style={styles.searchContainer}
                 onPress={() => {
-                    // navigation.navigate("NotificationsScreen");
+                    navigation.navigate("SearchScreen");
                 }} // Add navigation logic here
                 activeOpacity={0.8}
             >

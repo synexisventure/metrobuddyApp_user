@@ -19,13 +19,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { requestCameraPermission, requestGalleryPermission } from "../../utils/permissions";
 
-const Step2Form = ({ onNext, userId }) => {
+const Step2Form = ({ onNext = ()=>{}, userId }) => {
   // ✅ Use from context
   const {
     API_BASE_URL,
     IMAGE_BASE_URL,
+
     businessDetails,
+    loadingBusinessDetails,
     fetchBusinessDetails,
+
     handleApiError,
   } = useContext(AppContext);
 
@@ -38,6 +41,8 @@ const Step2Form = ({ onNext, userId }) => {
   const [area, setArea] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
+  const [description, setDescription] = useState("");
+  const [website, setWebsite] = useState("");
 
   const [businessDetailsLoading, setBusinessDetailsLoading] = useState(false);
 
@@ -51,6 +56,8 @@ const Step2Form = ({ onNext, userId }) => {
     setCity("");
     setState("");
     setLogo(null);
+    setWebsite("");
+    setDescription("");
   };
 
 
@@ -64,7 +71,7 @@ const Step2Form = ({ onNext, userId }) => {
   const [errors, setErrors] = useState({});
 
   // 🧩 On mount, fetch data from context
-  useEffect(() => {
+  useEffect(() => { 
     const loadData = async () => {
       resetForm();
       setBusinessDetailsLoading(true);
@@ -99,6 +106,9 @@ const Step2Form = ({ onNext, userId }) => {
       setArea(address.area || "");
       setCity(address.city || "");
       setState(address.state || "");
+      setDescription
+      setWebsite(businessDetails?.website || "");
+      setDescription(businessDetails?.description || "");
 
       if (businessDetails.logo) {
         setLogo({ uri: `${IMAGE_BASE_URL}/uploads/businessImages/${businessDetails.logo}` });
@@ -211,6 +221,9 @@ const Step2Form = ({ onNext, userId }) => {
       formData.append("area", area);
       formData.append("city", city);
       formData.append("state", state);
+      formData.append("description", description || "");
+      formData.append("website", website || "");
+
 
       if (logo && !logo.uri.startsWith("http")) {
         formData.append("logo", {
@@ -220,25 +233,52 @@ const Step2Form = ({ onNext, userId }) => {
         });
       }
 
-      const response = await axios.post(
-        `${API_BASE_URL}/user/partner_forms/business_details`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // const response = await axios.post(
+      //   `${API_BASE_URL}/user/partner_forms/business_details`,
+      //   formData,
+      //   {
+      //     headers: {
+      //       "Content-Type": "multipart/form-data",
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //   }
+      // );
+
+      // ✅ Detect whether to use POST or PUT
+      const isUpdate = !!businessDetails && !!businessDetails._id;
+
+      // choose API URL dynamically
+      const apiUrl = isUpdate
+        ? `${API_BASE_URL}/user/partner_forms/business_details/${currentBusinessId}`
+        : `${API_BASE_URL}/user/partner_forms/business_details`;
+
+      // choose method dynamically
+      const method = isUpdate ? "put" : "post";
+
+      const response = await axios({
+        method,
+        url: apiUrl,
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       console.log("✅ Business saved:", response.data);
-      Alert.alert("Success", "Business details saved successfully!");
+      Alert.alert("Success", isUpdate ? "Business details updated successfully!" : "Business details saved successfully!");
+
       onNext();
+
+      fetchBusinessDetails();
     } catch (error) {
+      console.log("error : " , error);
+      
       const msg = handleApiError(error, "Failed to save business details");
       Alert.alert("Error", msg);
     } finally {
-      setLoading(false);
+      setLoading(false); 
+      
     }
   };
 
@@ -264,7 +304,8 @@ const Step2Form = ({ onNext, userId }) => {
   );
 
   // 🌀 Loading
-  if (businessDetailsLoading) {
+  // if (businessDetailsLoading) { 
+  if (loadingBusinessDetails) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color="#155DFC" />
@@ -313,6 +354,19 @@ const Step2Form = ({ onNext, userId }) => {
             {renderInput("State", state, setState, "state")}
           </View>
         </View>
+
+        {/* {renderInput("Description", description, setDescription, "description")} */}
+
+        <Text style={styles.label}>Description (optional)</Text>
+        <TextInput
+          style={[styles.input, { height: 100, textAlignVertical: "top" }]}
+          multiline
+          placeholder="Enter description"
+          value={description}
+          onChangeText={setDescription}
+        />
+
+        {renderInput("Website (optional)", website, setWebsite, "website")}
 
         <TouchableOpacity
           style={[styles.saveBtn, loading && { opacity: 0.6 }]}

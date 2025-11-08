@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,18 +7,87 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppContext } from "../../context/AppContext";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useFocusEffect } from "@react-navigation/native";
 
-const Step4Form = ({ onNext }) => {
-  const { API_BASE_URL, handleApiError } = useContext(AppContext);
+const Step4Form = ({ onNext= ()=>{} }) => {
+  const { API_BASE_URL, handleApiError, businessTiming, loadingBusinessTiming, fetchBusinessTiming } = useContext(AppContext);
 
   const [timeSlots, setTimeSlots] = useState([{ day: [], openAt: "", closeAt: "" }]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  // picker of time steup======= 
+  const [showPickerIndex, setShowPickerIndex] = useState(null);
+  const [pickerType, setPickerType] = useState("open"); // "open" or "close"
+
+  // Function to open picker
+  const showTimePicker = (index, type) => {
+    setShowPickerIndex(index);
+    setPickerType(type);
+  };
+
+  // fetching data 
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadData = async () => {
+        try {
+          await fetchBusinessTiming();
+        } catch (err) {
+          console.log("Error loading business timing:", err);
+        }
+      };
+      loadData();
+    }, [])
+  );
+
+
+  // Handle time picked
+  const onTimeChange = (event, selectedTime) => {
+    if (showPickerIndex === null) return;
+    const currentTime = selectedTime || new Date();
+
+    let hours = currentTime.getHours();
+    const minutes = currentTime.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 => 12
+    const formattedTime = `${hours}:${minutes} ${ampm}`;
+
+    const updated = [...timeSlots];
+    if (pickerType === "open") updated[showPickerIndex].openAt = formattedTime;
+    else updated[showPickerIndex].closeAt = formattedTime;
+
+    setTimeSlots(updated);
+    setShowPickerIndex(null); // hide picker
+  };
+
+
+  // prefill data - showing from get api 
+  useEffect(() => {
+    if (businessTiming && businessTiming.timeSlots?.length) {
+      setTimeSlots(businessTiming.timeSlots);
+    }
+  }, [businessTiming]);
+
+  //  business id state 
+  const [businessId, setBusinessId] = useState(null);
+  useEffect(() => {
+    const loadBusinessId = async () => {
+      if (!businessId) {
+        const savedId = await AsyncStorage.getItem("businessId");
+        if (savedId) setBusinessId(savedId);
+      }
+    };
+    loadBusinessId();
+  }, []);
 
   // ✅ Add / Remove Slot
   const addSlot = () =>
@@ -57,24 +126,65 @@ const Step4Form = ({ onNext }) => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("token");
-      const businessId = await AsyncStorage.getItem("businessId");
 
       if (!businessId) {
         Alert.alert("Error", "Business ID not found in storage.");
         return;
       }
 
-      const payload = {
+      const postPayload = {
         businessId,
         timeSlots: timeSlots.filter((t) => t.day.length && t.openAt && t.closeAt),
       };
 
-      await axios.post(`${API_BASE_URL}/user/partner_forms/business_timing`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const putPayload = {
+        businessId,
+        timings: timeSlots.filter((t) => t.day.length && t.openAt && t.closeAt),
+      };
 
-      Alert.alert("✅ Success", "Business timing saved successfully!");
-      onNext && onNext();
+      // await axios.post(`${API_BASE_URL}/user/partner_forms/business_timing`, payload, {
+      //   headers: { Authorization: `Bearer ${token}` },
+      // });
+
+      // Alert.alert("✅ Success", "Business timing saved successfully!");
+
+      // onNext && onNext();
+
+      let res;
+      let isUpdate = false;
+
+      if (businessTiming && businessTiming.businessId) {
+
+      console.log("myy put api payload : ", putPayload);
+
+        // ✅ Update existing timing with PUT
+        isUpdate = true;
+        res = await axios.put(
+          `${API_BASE_URL}/user/partner_forms/business_timing/${businessId}`,
+          putPayload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        // ✅ Create new timing with POST
+      console.log("myy post api payload : ", postPayload);
+
+        res = await axios.post(
+          `${API_BASE_URL}/user/partner_forms/business_timing`,
+          postPayload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
+      if (res.data) {
+        Alert.alert(
+          "Success",
+          isUpdate
+            ? "Business timing updated successfully!"
+            : "Business timing saved successfully!"
+        );
+        onNext && onNext();
+      }
+      fetchBusinessTiming();
     } catch (error) {
       const msg = handleApiError(error, "Failed to save business timing");
       Alert.alert("Error", msg);
@@ -98,10 +208,19 @@ const Step4Form = ({ onNext }) => {
     </View>
   );
 
+  if (loadingBusinessTiming) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", marginTop: 50 }}>
+        <ActivityIndicator size="large" color="#0056ff" />
+        <Text style={{ marginTop: 10 }}>Loading business timing...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
       <Text style={styles.title}>Business Timing</Text>
-      <Text style={styles.subtitle}>Select working days and hours</Text>
+      <Text style={styles.subtitle}>Select working days and hoursss</Text>
 
       {timeSlots.map((slot, index) => (
         <View key={index} style={styles.slotContainer}>
@@ -140,7 +259,7 @@ const Step4Form = ({ onNext }) => {
 
           {/* Open / Close time */}
           <View style={styles.timeContainer}>
-            <View style={styles.timeBox}>
+            {/* <View style={styles.timeBox}>
               {renderInput(
                 "Open at",
                 slot.openAt,
@@ -151,9 +270,9 @@ const Step4Form = ({ onNext }) => {
                 },
                 errors.timeSlots?.[index]?.openAt
               )}
-            </View>
+            </View> */}
 
-            <View style={styles.timeBox}>
+            {/* <View style={styles.timeBox}>
               {renderInput(
                 "Close at",
                 slot.closeAt,
@@ -164,7 +283,38 @@ const Step4Form = ({ onNext }) => {
                 },
                 errors.timeSlots?.[index]?.closeAt
               )}
+            </View> */}
+
+            <View style={styles.timeBox}>
+              <Text style={styles.timeLabel}>Open at</Text>
+              <TouchableOpacity
+                style={styles.input}
+                onPress={() => showTimePicker(index, "open")}
+              >
+                <Text style={{ color: timeSlots[index].openAt ? "#000" : "#888" }}>
+                  {timeSlots[index].openAt || "Select time"}
+                </Text>
+              </TouchableOpacity>
+              {errors.timeSlots?.[index]?.openAt && (
+                <Text style={styles.errorText}>{errors.timeSlots[index].openAt}</Text>
+              )}
             </View>
+
+            <View style={styles.timeBox}>
+              <Text style={styles.timeLabel}>Close at</Text>
+              <TouchableOpacity
+                style={styles.input}
+                onPress={() => showTimePicker(index, "close")}
+              >
+                <Text style={{ color: timeSlots[index].closeAt ? "#000" : "#888" }}>
+                  {timeSlots[index].closeAt || "Select time"}
+                </Text>
+              </TouchableOpacity>
+              {errors.timeSlots?.[index]?.closeAt && (
+                <Text style={styles.errorText}>{errors.timeSlots[index].closeAt}</Text>
+              )}
+            </View>
+
           </View>
 
           {index > 0 && (
@@ -188,6 +338,17 @@ const Step4Form = ({ onNext }) => {
           {loading ? "Saving..." : "Save and Continue"}
         </Text>
       </TouchableOpacity>
+
+      {showPickerIndex !== null && (
+        <DateTimePicker
+          value={new Date()} // default now
+          mode="time"
+          is24Hour={false} // <-- 12-hour clock with AM/PM
+          display="spinner" // or "clock"
+          onChange={onTimeChange}
+        />
+      )}
+
     </ScrollView>
   );
 };
@@ -236,6 +397,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0056ff",
     borderRadius: 8,
     paddingVertical: 14,
+    marginBottom: 20,
     alignItems: "center",
   },
   saveText: { color: "#fff", fontSize: 16, fontWeight: "600" },

@@ -18,7 +18,7 @@ import { requestCameraPermission, requestGalleryPermission } from "../../utils/p
 import FilePickerModal from "../../components/filePicker/FilePickerModal";
 import { useNavigation } from "@react-navigation/native";
 
-const Step7Form = ({ onSubmit }) => {
+const Step7Form = ({ onSubmit = ()=>{} }) => {
   const navigation = useNavigation();
   const { API_BASE_URL, handleApiError,  businessDocuments , fetchBusinessDocuments} = useContext(AppContext);
 

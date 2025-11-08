@@ -48,7 +48,7 @@ const BusinessOverview = ({ }) => {
       const days = slot?.day?.join(', ') || '';
       const openAt = slot?.openAt || '';
       const closeAt = slot?.closeAt || '';
-      return `${days}: ${openAt}:00 - ${closeAt}:00`;
+      return `${days}: ${openAt} - ${closeAt}`;
     }).join('\n');
   };
 
@@ -116,7 +116,7 @@ const BusinessOverview = ({ }) => {
         />
         <View style={{ flex: 1 }}>
           <Text style={styles.infoText}>
-             {businessDetails?.website || 'No Website Provided'}
+            {businessDetails?.website || 'No Website Provided'}
           </Text>
           {/* <TouchableOpacity onPress={handleGetDirections}>
               <Text style={styles.linkText}>Get Directions</Text>
@@ -211,18 +211,25 @@ const BusinessOverview = ({ }) => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.row}>
-          <Image
-            source={require('../../assets/images/clock.png')}
-            style={styles.icon}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.timingText}>
-              {formatTiming()}
-            </Text>
-          </View>
-        </View>
+        {businessTiming?.timeSlots?.length > 0 ? (
+          businessTiming.timeSlots.map((slot, index) => (
+            <View style={styles.row} key={index}>
+              <Image
+                source={require('../../assets/images/clock.png')}
+                style={styles.icon}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.timingText}>
+                  {slot.day?.join(', ') || 'No days'}: {slot.openAt} - {slot.closeAt}
+                </Text>
+              </View>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.infoText}>Timing not set</Text>
+        )}
       </View>
+
     </View>
   );
 };

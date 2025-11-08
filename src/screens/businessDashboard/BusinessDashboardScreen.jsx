@@ -10,7 +10,7 @@ import DashboardOverview from "../../components/businessDashboard2/DashboardOver
 import DashboardReviews from "../../components/businessDashboard2/DashboardReviews";
 import DashboardPhotos from "../../components/businessDashboard2/DashboardPhotos";
 import StepFormsHeader from "../../components/becomePartner/StepFormsHeader";
-
+import DashboardProduct from "../../components/businessDashboard2/DashboardProduct";
 import DashboardPersonalWallet from "../../components/businessDashboard2/DashboardPersonalWallet";
 
 import { useFocusEffect } from "@react-navigation/native";
@@ -62,6 +62,8 @@ const BusinessSingleScreen = () => {
                 {activeTab === "Photos" && <DashboardPhotos />}
                 {activeTab === "Subscription" && <CurrentSubscriptionScreen/> }
                 {activeTab === "Personal Wallet" && <DashboardPersonalWallet/> }
+                {activeTab === "Products" && <DashboardProduct/> }
+
             </ScrollView>
         </>
     );

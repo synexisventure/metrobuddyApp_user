@@ -13,14 +13,31 @@ const BusinessPhotos = ({ }) => {
   const photos = businessMedia?.photos || [];
 
   // Construct full image URLs
+  // const getImageUrl = (photoUrl) => {
+  //   if (!photoUrl) return null;
+
+  //   // remove leading /uploads if already present
+  //   const cleanPath = photoUrl.replace(/^\/?uploads\//, '');
+
+  //   return `${IMAGE_BASE_URL}/uploads/businessMedia/${cleanPath}`;
+  // };
+
   const getImageUrl = (photoUrl) => {
     if (!photoUrl) return null;
 
-    // remove leading /uploads if already present
-    const cleanPath = photoUrl.replace(/^\/?uploads\//, '');
+    const urlString =
+      typeof photoUrl === 'string'
+        ? photoUrl
+        : typeof photoUrl?.url === 'string'
+          ? photoUrl.url
+          : null;
 
+    if (!urlString) return null;
+
+    const cleanPath = urlString.replace(/^\/?uploads\//, '');
     return `${IMAGE_BASE_URL}/uploads/businessMedia/${cleanPath}`;
   };
+
 
 
 

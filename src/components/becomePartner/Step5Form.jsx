@@ -14,21 +14,28 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppContext } from "../../context/AppContext";
 import { useFocusEffect } from "@react-navigation/native";
 
-const Step5Form = ({ onNext }) => {
-  const { API_BASE_URL,
+const Step5Form = ({ onNext = ()=>{} }) => {
+  const { 
+    API_BASE_URL,
     handleApiError,
+
     fetchBusinessGlobalCategory,
     businessGlobalCategory,
+
     businessCategory,
     fetchBusinessCategory,
+    loadingBusinessCategory,
+
   } = useContext(AppContext);
 
   const [categoryId, setCategoryId] = useState("");
   const [subCategories, setSubCategories] = useState([]);
   const [availableSubs, setAvailableSubs] = useState([]); // fetched subcategories
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [businessId, setBusinessId] = useState(null);
+  
+  const [loading, setLoading] = useState(false);
+  const [subLoading, setSubLoading] = useState(false);
 
   // 🧩 Fetch businessId
   useEffect(() => {
@@ -44,7 +51,7 @@ const Step5Form = ({ onNext }) => {
     useCallback(() => {
       const loadData = async () => {
         setLoading(true);
-        await fetchBusinessGlobalCategory();
+        fetchBusinessGlobalCategory();
         await fetchBusinessCategory();
         setLoading(false);
       }
@@ -54,17 +61,28 @@ const Step5Form = ({ onNext }) => {
 
 
   // selecting category and subcategories if already saved
+  // useEffect(() => {
+  //   if (businessCategory) {
+  //     console.log("Preselecting category:", businessCategory); 
+  //     if (businessCategory.categoryId) {
+  //       setCategoryId(businessCategory.categoryId._id);
+  //     }
+  //     if (businessCategory.subCategories) {
+  //       setSubCategories(businessCategory.subCategories);
+  //     }
+  //   }
+  // }, [businessCategory]);
   useEffect(() => {
     if (businessCategory) {
-      console.log("Preselecting category:", businessCategory); 
-      if (businessCategory.categoryId) {
-        setCategoryId(businessCategory.categoryId);
-      }
-      if (businessCategory.subCategories) {
-        setSubCategories(businessCategory.subCategories);
-      }
+      // Send only ID
+      setCategoryId(businessCategory.categoryId?._id || "");
+      // Map subcategories to IDs
+      setSubCategories(
+        businessCategory.subCategories?.map(sub => sub._id) || []
+      );
     }
   }, [businessCategory]);
+
 
   // 🧩 Fetch subcategories when categoryId changes
   useEffect(() => {
@@ -74,7 +92,7 @@ const Step5Form = ({ onNext }) => {
     }
     const fetchSubcategories = async () => {
       try {
-        setLoading(true);
+        setSubLoading(true);
         const token = await AsyncStorage.getItem("token");
         const res = await axios.get(
           `${API_BASE_URL}/user/categories/get-subcategories?categoryId=${categoryId}`,
@@ -89,9 +107,11 @@ const Step5Form = ({ onNext }) => {
         }
       } catch (error) {
         const msg = handleApiError(error, "Failed to load subcategories");
+        console.log("error : ", error?.response);
+
         Alert.alert("Error", msg);
       } finally {
-        setLoading(false);
+        setSubLoading(false);
       }
     };
     fetchSubcategories();
@@ -107,6 +127,45 @@ const Step5Form = ({ onNext }) => {
   };
 
   // 🧩 Save selected category + subcategories
+  // const handleSaveAndContinue = async () => {
+  //   if (!categoryId) {
+  //     Alert.alert("Validation", "Please select a category first.");
+  //     return;
+  //   }
+  //   if (subCategories.length === 0) {
+  //     Alert.alert("Validation", "Please select at least one subcategory.");
+  //     return;
+  //   }
+
+  //   try {
+  //     setSaving(true);
+  //     const token = await AsyncStorage.getItem("token");
+
+  //     const payload = {
+  //       categoryId,
+  //       subCategories : subCategories.map(sub => typeof sub === 'object' ? sub._id : sub),
+  //       businessId,
+  //     };
+
+  //     const res = await axios.post(
+  //       `${API_BASE_URL}/user/partner_forms/business_category`,
+  //       payload,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+
+  //     if (res.data) {
+  //       Alert.alert("Success", "Business category saved successfully!");
+  //       onNext && onNext();
+  //     }
+  //   } catch (error) {
+  //     const msg = handleApiError(error, "Failed to save business category");
+  //     Alert.alert("Error", msg);
+  //   } finally {
+  //     setSaving(false);
+  //   }
+  // };
   const handleSaveAndContinue = async () => {
     if (!categoryId) {
       Alert.alert("Validation", "Please select a category first.");
@@ -123,22 +182,41 @@ const Step5Form = ({ onNext }) => {
 
       const payload = {
         categoryId,
-        subCategories,
+        subCategories: subCategories.map(sub => typeof sub === 'object' ? sub._id : sub),
         businessId,
       };
 
-      const res = await axios.post(
-        `${API_BASE_URL}/user/partner_forms/business_category`,
-        payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      let res;
+      let isUpdate = false;
+
+      if (businessCategory && businessCategory.businessId) {
+        // ✅ Use businessId for PUT
+        isUpdate = true;
+        res = await axios.put(
+          `${API_BASE_URL}/user/partner_forms/business_category/${businessCategory.businessId}`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        // ✅ Create new entry with POST
+        res = await axios.post(
+          `${API_BASE_URL}/user/partner_forms/business_category`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
 
       if (res.data) {
-        Alert.alert("Success", "Business category saved successfully!");
+        Alert.alert(
+          "Success",
+          isUpdate
+            ? "Business category updated successfully!"
+            : "Business category saved successfully!"
+        );
         onNext && onNext();
+        fetchBusinessCategory();
       }
+      fetchBusinessCategory();
     } catch (error) {
       const msg = handleApiError(error, "Failed to save business category");
       Alert.alert("Error", msg);
@@ -147,11 +225,14 @@ const Step5Form = ({ onNext }) => {
     }
   };
 
-  if (loading) {
+
+  // if (loading) {
+// category and subcategory loading 
+  if (loadingBusinessCategory || loading) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color="#155DFC" />
-        <Text style={styles.loaderText}>Loading subcategories...</Text>
+        <Text style={styles.loaderText}>Loading categories...</Text>
       </View>
     );
   }
@@ -195,7 +276,7 @@ const Step5Form = ({ onNext }) => {
         Select Subcategories
       </Text>
 
-      {loading ? (
+      {subLoading  ? (
         <View style={styles.loader}>
           <ActivityIndicator size="small" color="#155DFC" />
           <Text style={styles.loaderText}>Loading subcategories...</Text>
@@ -277,7 +358,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   saveText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  loader: { flex: 1, justifyContent: "center", alignItems: "center", marginBottom : 20 },
   loaderText: { marginTop: 10, color: "#555" },
   noDataBox: {
     alignItems: "center",

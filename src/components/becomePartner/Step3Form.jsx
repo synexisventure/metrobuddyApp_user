@@ -14,8 +14,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppContext } from "../../context/AppContext";
 import { isValidEmail, isValidMobile } from "../../utils/validators";
 
-const Step3Form = ({ onNext }) => {
-  const { API_BASE_URL, handleApiError, fetchContactDetails, contactDetails } = useContext(AppContext);
+const Step3Form = ({ onNext=()=>{} }) => {
+  const { API_BASE_URL,
+    handleApiError,
+
+    fetchContactDetails,
+    contactDetails,
+    loadingContactDetails
+    
+  } = useContext(AppContext);
 
   const [primaryMobile, setPrimaryMobile] = useState("");
   // const [primaryEmail, setPrimaryEmail] = useState("");
@@ -50,7 +57,7 @@ const Step3Form = ({ onNext }) => {
   // prefill form when contactDetails change
   useEffect(() => {
     if (contactDetails && Object.keys(contactDetails).length > 0) {
-      setWhatsappNumber(contactDetails.whatsappNumber || ""); 
+      setWhatsappNumber(contactDetails.whatsappNumber || "");
       setAdditionalPhones(
         contactDetails.additionalPhones?.length ? contactDetails.additionalPhones : [""]
       );
@@ -145,20 +152,62 @@ const Step3Form = ({ onNext }) => {
         additionalEmails: additionalEmails.filter((e) => e.trim() !== ""),
       };
 
-      const resp = await axios.post(
-        `${API_BASE_URL}/user/partner_forms/contact_details`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
 
-      console.log("✅ Saved contact details:", resp.data);
-      Alert.alert("Success", "Contact details saved successfully!");
+
+      // const resp = await axios.post(
+      //   `${API_BASE_URL}/user/partner_forms/contact_details`,
+      //   payload,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //       "Content-Type": "application/json",
+      //     },
+      //   }
+      // );
+
+      let res;
+      let isUpdate = false;
+
+      if (contactDetails && contactDetails._id) {
+        // ✅ Update existing contact details
+        isUpdate = true;
+        res = await axios.put(
+          `${API_BASE_URL}/user/partner_forms/contact_details/${businessId}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else {
+        // ✅ Create new contact details
+        res = await axios.post(
+          `${API_BASE_URL}/user/partner_forms/contact_details`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+
+      if (res.data) {
+        Alert.alert(
+          "Success",
+          isUpdate
+            ? "Contact details updated successfully!"
+            : "Contact details saved successfully!"
+        ); 
+      }
+
+      console.log("Saved contact details:", res.data);
+      // Alert.alert("Success", "Contact details saved successfully!");
       onNext();
+      fetchContactDetails();
     } catch (err) {
       const msg = handleApiError(err, "Failed to save contact details");
       Alert.alert("Error", msg);
@@ -170,7 +219,8 @@ const Step3Form = ({ onNext }) => {
 
 
   // 🌀 Loader
-  if (fetching) {
+  // if (fetching) {
+  if (loadingContactDetails) {
     return (
       <View style={{ flex: 1, alignItems: "center", marginTop: 50 }}>
         <ActivityIndicator size="large" color="#0056ff" />
@@ -428,6 +478,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: "center",
     marginTop: 20,
+    marginBottom: 20
   },
   saveText: {
     color: "#fff", fontSize: 16, fontWeight: "600",

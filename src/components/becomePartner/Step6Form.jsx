@@ -19,7 +19,7 @@ import {
   requestGalleryPermission,
 } from "../../utils/permissions";
 
-const Step6Form = ({ onNext }) => {
+const Step6Form = ({ onNext = ()=>{} }) => {
   const { API_BASE_URL, IMAGE_BASE_URL, handleApiError, businessMedia, setBusinessMedia } = useContext(AppContext);
 
   const [photos, setPhotos] = useState([]);

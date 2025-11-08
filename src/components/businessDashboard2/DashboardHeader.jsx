@@ -23,16 +23,32 @@ const BusinessSingleHeader = () => {
   const photos = businessMedia?.photos || [];
 
   // Construct full image URLs
+  // const getImageUrl = (photoUrl) => {
+  //   if (!photoUrl) return null;
+
+  //   // Remove optional leading slash and the 'uploads/' folder only
+  //   const cleanPath = photoUrl.replace(/^\/?uploads\//, '');
+  //   const finalUrl = `${IMAGE_BASE_URL}/uploads/businessMedia/${cleanPath}`;
+
+  //   console.log("final header image URL : ", finalUrl);
+  //   return finalUrl;
+  // };
   const getImageUrl = (photoUrl) => {
     if (!photoUrl) return null;
 
-    // Remove optional leading slash and the 'uploads/' folder only
-    const cleanPath = photoUrl.replace(/^\/?uploads\//, '');
-    const finalUrl = `${IMAGE_BASE_URL}/uploads/businessMedia/${cleanPath}`;
+    const urlString =
+      typeof photoUrl === 'string'
+        ? photoUrl
+        : typeof photoUrl?.url === 'string'
+          ? photoUrl.url
+          : null;
 
-    console.log("final header image URL : ", finalUrl);
-    return finalUrl;
+    if (!urlString) return null;
+
+    const cleanPath = urlString.replace(/^\/?uploads\//, '');
+    return `${IMAGE_BASE_URL}/uploads/businessMedia/${cleanPath}`;
   };
+
 
   // If no photos, return null
   // If no photos, show empty placeholder view with min height

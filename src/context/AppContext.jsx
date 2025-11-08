@@ -36,7 +36,7 @@ export const AppProvider = ({ children }) => {
       setNetworkError(false);
     }
 
-    console.error("err msg is :", message);
+    console.error("err msg is :", message, );
     return message;
   };
 
@@ -75,24 +75,35 @@ export const AppProvider = ({ children }) => {
   const [businessMedia, setBusinessMedia] = useState(null);
   const [businessDocuments, setBusinessDocuments] = useState(null);
 
+  // loading for each step 
+  const [loadingBusinessDetails, setLoadingBusinessDetails] = useState(false);
+  const [loadingContactDetails, setLoadingContactDetails] = useState(false);
+  const [loadingBusinessTiming, setLoadingBusinessTiming] = useState(false);
+  const [loadingBusinessCategory, setLoadingBusinessCategory] = useState(false);
+  const [loadingBusinessProducts, setLoadingBusinessProducts] = useState(false);
+  const [loadingBusinessMedia, setLoadingBusinessMedia] = useState(false);
+  const [loadingBusinessDocuments, setLoadingBusinessDocuments] = useState(false);
+
+
   // INDIVIDUAL FORM FETCH FUNCTIONS
-  const fetchBusinessDetails = async () => fetchSingleForm(1, setBusinessDetails);
-  const fetchContactDetails = async () => fetchSingleForm(2, setContactDetails);
-  const fetchBusinessTiming = async () => fetchSingleForm(3, setBusinessTiming);
-  const fetchBusinessCategory = async () => fetchSingleForm(4, setBusinessCategory);
-  const fetchBusinessProducts = async () => fetchSingleForm(5, setBusinessProducts);
-  const fetchBusinessMedia = async () => fetchSingleForm(6, setBusinessMedia);
-  const fetchBusinessDocuments = async () => fetchSingleForm(7, setBusinessDocuments);
+  const fetchBusinessDetails = async () => fetchSingleForm(1, setBusinessDetails, setLoadingBusinessDetails);
+  const fetchContactDetails = async () => fetchSingleForm(2, setContactDetails, setLoadingContactDetails);
+  const fetchBusinessTiming = async () => fetchSingleForm(3, setBusinessTiming, setLoadingBusinessTiming);
+  const fetchBusinessCategory = async () => fetchSingleForm(4, setBusinessCategory, setLoadingBusinessCategory);
+  const fetchBusinessProducts = async () => fetchSingleForm(5, setBusinessProducts, setLoadingBusinessProducts);
+  const fetchBusinessMedia = async () => fetchSingleForm(6, setBusinessMedia, setLoadingBusinessMedia);
+  const fetchBusinessDocuments = async () => fetchSingleForm(7, setBusinessDocuments, setLoadingBusinessDocuments);
 
   // GENERIC FETCH FUNCTION FOR SINGLE STEP
-  const fetchSingleForm = async (stepNumber, setter) => {
+  const fetchSingleForm = async (stepNumber, setter, loadingSetter) => {
+    loadingSetter(true);
     try {
       const token = await AsyncStorage.getItem("token");
       const businessId = await AsyncStorage.getItem("businessId");
       if (!businessId) throw new Error("Business ID not found");
 
       const response = await axios.get(
-        `${API_BASE_URL}/user/partner_forms/business/${businessId}/${stepForm}`,
+        `${API_BASE_URL}/user/partner_forms/business/${businessId}/${stepNumber}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -104,6 +115,8 @@ export const AppProvider = ({ children }) => {
       console.error(`❌ Error fetching step ${stepNumber}:`, msg);
       setter(null);
       return null;
+    } finally {
+      loadingSetter(false);
     }
   };
 
@@ -232,6 +245,15 @@ export const AppProvider = ({ children }) => {
         setBusinessProducts,
         setBusinessMedia,
         setBusinessDocuments,
+
+        // individual loading states ✅
+        loadingBusinessDetails,
+        loadingContactDetails,
+        loadingBusinessTiming,
+        loadingBusinessCategory,
+        loadingBusinessProducts,
+        loadingBusinessMedia,
+        loadingBusinessDocuments,
 
         // All forms fetcher
         allBusinessLoading,
