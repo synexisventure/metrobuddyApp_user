@@ -15,7 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BusinessSingleScreen = () => {
   const route = useRoute();
-  const { key } = route.params; // key/id from navigation
+  const { key } = route.params; // key : id from navigation
 
   const { API_BASE_URL } = useContext(AppContext);
 
@@ -28,7 +28,7 @@ const BusinessSingleScreen = () => {
   useEffect(() => {
     const fetchBusinessDetails = async () => {
 
-      console.log("fetching for key : ", key);
+      console.log("fetching for key : ", key.businessId || key);
 
       try {
         setLoading(true);
@@ -36,7 +36,7 @@ const BusinessSingleScreen = () => {
 
         const token = await AsyncStorage.getItem("token");
 
-        const response = await axios.get(`${API_BASE_URL}/user/business/${key.businessId}`,
+        const response = await axios.get(`${API_BASE_URL}/user/business/${key.businessId || key}`,
         // const response = await axios.get(`${API_BASE_URL}/user/business/6908de84d2431590add9ec07`,
           {
             headers: {

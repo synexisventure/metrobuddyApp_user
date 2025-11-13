@@ -28,6 +28,9 @@ import SubscriptionScreen from "../screens/Subscription/SubscriptionScreen";
 // search
 import SearchScreen from "../screens/search/SearchScreen";
 
+// category search screen
+import CategorySearchScreen from "../screens/categorySearch/CategorySearchScreeen";
+
 const Stack = createNativeStackNavigator();
 
 const AppStackNavigator = () => {
@@ -62,7 +65,9 @@ const AppStackNavigator = () => {
             {/* search screen */}
             <Stack.Screen name="SearchScreen" component={SearchScreen} />
 
-
+            {/*  category search screen */}
+            <Stack.Screen name="CategorySearchScreen" component={CategorySearchScreen} />
+            
         </Stack.Navigator>
     )
 }

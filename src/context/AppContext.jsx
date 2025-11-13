@@ -10,7 +10,7 @@ export const AppProvider = ({ children }) => {
   // const IMAGE_BASE_URL = "http://192.168.1.4:7000";
 
     const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
-  const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com/";
+  const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";
 
   // ERROR HANDLER 
   const [networkError, setNetworkError] = useState(false);
@@ -210,6 +210,8 @@ export const AppProvider = ({ children }) => {
       setBusinessCategoryLoading(false);
     }
   };
+
+  
  
 
   // PROVIDER EXPORT 

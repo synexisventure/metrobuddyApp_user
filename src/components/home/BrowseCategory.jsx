@@ -1,139 +1,155 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useContext, useEffect } from "react";
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    TouchableOpacity,
+    ActivityIndicator,
+} from "react-native";
+import { AppContext } from "../../context/AppContext";
+import { useNavigation } from "@react-navigation/native";
 
-// --- Data for Categories (Mapping to your local files) ---
-// NOTE: You must have image files named exactly as they appear in the 'icon' property
-// in the /images/category directory (e.g., b2b_services.png, restaurants.png, etc.)
-const categories = [
-    // This is the structure you indicated as correct
-    { name: 'B2B Services', icon: require('../../assets/images/categories/b2b.png'), color: '#4A90E2', bgColor: '#E6F0FF' },
-    { name: 'Restaurants', icon: require('../../assets/images/categories/restaurants.png'), color: '#D9652B', bgColor: '#FFF2E6' },
-    { name: 'Hotels', icon: require('../../assets/images/categories/hotels.png'), color: '#9B59B6', bgColor: '#F6E6FF' },
-    { name: 'Beauty & Spa', icon: require('../../assets/images/categories/spa.png'), color: '#E91E63', bgColor: '#FFEFF4' },
-    { name: 'Education', icon: require('../../assets/images/categories/education.png'), color: '#27AE60', bgColor: '#E6FFF0' },
-    { name: 'Healthcare', icon: require('../../assets/images/categories/heart.png'), color: '#E74C3C', bgColor: '#FFF0F0' },
-    { name: 'Auto Services', icon: require('../../assets/images/categories/auto.png'), color: '#546E7A', bgColor: '#F0F3F5' },
-    { name: 'Cafes', icon: require('../../assets/images/categories/cup.png'), color: '#E67E22', bgColor: '#FFF8E6' },
-];
-
-// --- Helper Component for Image and Label ---
-const CategoryItem = ({ name, icon, bgColor }) => {
+const CategoryItem = ({ name, iconUrl, bgColor }) => {
     return (
         <TouchableOpacity style={styles.categoryItemContainer}>
             <View style={[styles.iconWrapper, { backgroundColor: bgColor }]}>
-                {/* The 'icon' property is now the result of require() */}
-                <Image source={icon} style={styles.iconImage} resizeMode="contain" />
+                <Image
+                    source={{ uri: iconUrl }}
+                    style={styles.iconImage}
+                    resizeMode="contain"
+                />
             </View>
             <Text style={styles.categoryName}>{name}</Text>
         </TouchableOpacity>
     );
 };
 
-// --- Main Component ---
-const BrowseCategory = () => {
+const BrowseCategory = ({ }) => {
+
+    const navigation = useNavigation();
+
+    const {
+        businessGlobalCategory,
+        fetchBusinessGlobalCategory,
+        businessCategoryLoading,
+        IMAGE_BASE_URL,
+    } = useContext(AppContext);
+
+    useEffect(() => {
+        fetchBusinessGlobalCategory();
+    }, []);
+
     return (
         <View style={styles.container}>
-            {/* Header Row */}
-            <View style={styles.header }>
+            {/* Header */}
+            <View style={styles.header}>
                 <Text style={styles.headerTitle}>Browse Categories</Text>
-                <TouchableOpacity style={[styles.viewAllButton , {}]}>
+                <TouchableOpacity
+                    style={styles.viewAllButton}
+                    onPress={() => navigation.navigate("Categories")}
+                >
                     <Text style={styles.viewAllText}>View All</Text>
-                    {/* Using a simple Unicode arrow or a basic Text element for the arrow if not using an icon library */}
-                <Image
-                source={require("../../assets/images/forward_icon.png")}
-                resizeMode='contain'
-                style ={{height : 20}}
-                />
+                    <Image
+                        source={require("../../assets/images/forward_icon.png")}
+                        resizeMode="contain"
+                        style={{ height: 18, width: 18 }}
+                    />
                 </TouchableOpacity>
             </View>
 
-            {/* Categories Grid */}
-            <View style={styles.categoriesGrid}>
-                {categories.map((category, index) => (
-                    <CategoryItem
-                        key={index}
-                        name={category.name}
-                        icon={category.icon}
-                        bgColor={category.bgColor}
-                    />
-                ))}
-            </View>
+            {/* Loading State */}
+            {businessCategoryLoading ? (
+                <ActivityIndicator size="small" color="#000" style={{ marginTop: 20 }} />
+            ) : (
+                <View style={styles.categoriesGrid}>
+                    {businessGlobalCategory && businessGlobalCategory.length > 0 ? (
+                        businessGlobalCategory
+                            .slice(0, 8) // only show 8 items like before
+                            .map((category, index) => (
+                                <CategoryItem
+                                    key={index}
+                                    name={category.name}
+                                    iconUrl={`${IMAGE_BASE_URL}/uploads/categoryImages/${category.image}`}
+                                    bgColor="#f8f9fa"
+                                />
+                            ))
+                    ) : (
+                        <Text style={styles.noDataText}>No categories found</Text>
+                    )}
+                </View>
+            )}
         </View>
     );
 };
 
 export default BrowseCategory;
 
-// --- Stylesheet ---
 const styles = StyleSheet.create({
     container: {
         padding: 10,
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
     },
 
-    // Header Styles
+    // Header
     header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: 16,
     },
     headerTitle: {
         fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
+        fontWeight: "600",
+        color: "#000",
     },
     viewAllButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
     },
     viewAllText: {
         fontSize: 14,
-        color: '#4A90E2',
-        fontWeight: '600',
-        marginRight: 4, // Space between text and arrow
-    },
-    arrowText: {
-        fontSize: 20,
-        color: '#4A90E2',
-        fontWeight: 'bold', 
-        lineHeight: 20,
-        transform: [{ rotate: '90deg' }],  
+        color: "#4A90E2",
+        fontWeight: "600",
+        marginRight: 4,
     },
 
-    // Grid Styles
+    // Categories grid
     categoriesGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'flex-start',
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: "flex-start",
     },
 
-    // Category Item Styles
+    // Category item
     categoryItemContainer: {
-        width: '25%', // 4 items per row
-        alignItems: 'center',
+        width: "25%", // 4 per row
+        alignItems: "center",
         marginBottom: 16,
     },
     iconWrapper: {
         width: 60,
         height: 60,
         borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
         marginBottom: 8,
-    }, 
+    },
     iconImage: {
-        width: 30,  
+        width: 30,
         height: 30,
-        tintColor: undefined, // IMPORTANT: Local images are often colorized by the source file, not tintColor
     },
     categoryName: {
         fontSize: 12,
-        textAlign: 'center',
-        color: '#333',
-        fontWeight: '500',
-        // The name can wrap to a new line if it's too long, like 'Auto Services'
-        width: '90%',
-        // borderWidth : 1
+        textAlign: "center",
+        color: "#333",
+        fontWeight: "500",
+        width: "90%",
+    },
+    noDataText: {
+        textAlign: "center",
+        color: "#666",
+        fontSize: 14,
+        marginTop: 10,
     },
 });
