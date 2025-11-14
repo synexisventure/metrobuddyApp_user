@@ -31,6 +31,10 @@ import SearchScreen from "../screens/search/SearchScreen";
 // category search screen
 import CategorySearchScreen from "../screens/categorySearch/CategorySearchScreeen";
 
+// leads 
+import SingleBusinessLeadScreen from "../screens/leads/SingleBusinessLeadScreen";
+import LeadsScreen from '../screens/leads/LeadsScreen'; 
+
 const Stack = createNativeStackNavigator();
 
 const AppStackNavigator = () => {
@@ -58,7 +62,6 @@ const AppStackNavigator = () => {
             <Stack.Screen name="UploadDocumentScreen" component={UploadDocumentScreen} />
 
             {/* subscription screens */}
-
             <Stack.Screen name="CurrentSubscriptionScreen" component={CurrentSubscriptionScreen} />
             <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
 
@@ -67,7 +70,11 @@ const AppStackNavigator = () => {
 
             {/*  category search screen */}
             <Stack.Screen name="CategorySearchScreen" component={CategorySearchScreen} />
-            
+
+            {/* leads screen */}
+            <Stack.Screen name="LeadsScreen" component={LeadsScreen} />
+            <Stack.Screen name="SingleLeadScreen" component={SingleBusinessLeadScreen} />
+
         </Stack.Navigator>
     )
 }

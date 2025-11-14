@@ -1,359 +1,264 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert } from 'react-native'
-import React from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert, ActivityIndicator } from 'react-native'
+import React, { useState, useEffect, useContext } from 'react'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import axios from 'axios'
+import { AppContext } from '../../context/AppContext'
 
-const check = () => {
+const SubscriptionDetailsScreen = () => {
   const navigation = useNavigation()
+  const { API_BASE_URL } = useContext(AppContext)
+  
+  const [subscription, setSubscription] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  // Mock data - replace with actual subscription data from your state/API
-  const currentSubscription = {
-    plan: 'Gold',
-    type: 'Monthly',
-    price: '₹399',
-    status: 'Active',
-    startDate: '2024-01-15',
-    endDate: '2024-02-15',
-    features: [
-      'Access to premium tools',
-      'Priority email support',
-      '15 team members',
-      'Advanced analytics dashboard',
-      'Priority support (24/7)',
-      'Advanced reporting'
-    ],
-    autoRenewal: true
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchSubscriptions()
+    }, [])
+  )
+
+  const fetchSubscriptions = async () => {
+    try {
+      setLoading(true)
+      const token = await AsyncStorage.getItem("token")
+
+      const response = await axios.get(`${API_BASE_URL}/user/subscription`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      const subsArray = response.data.data || []
+
+      console.log("SUBS ARRAY:", subsArray)
+
+      if (subsArray.length > 0) {
+        setSubscription(subsArray[0]) // <-- YOUR FIX
+      } else {
+        setSubscription(null)
+      }
+      
+    } catch (error) {
+      Alert.alert("Error", "Failed to load subscriptions")
+      console.log("SUB ERROR:", error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleBuySubscription = () => {
-    navigation.navigate('SubscriptionScreen')
-  }
-
-  const handleToggleAutoRenewal = () => {
-    Alert.alert(
-      'Auto Renewal',
-      `Do you want to ${currentSubscription.autoRenewal ? 'disable' : 'enable'} auto renewal?`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        },
-        {
-          text: 'Confirm',
-          onPress: () => {
-            // Handle auto renewal toggle logic here
-            Alert.alert('Success', `Auto renewal ${currentSubscription.autoRenewal ? 'disabled' : 'enabled'}`)
-          }
-        }
-      ]
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#155DFC" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
     )
   }
 
-  const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return '#4CAF50'
-      case 'expired':
-        return '#FF6B6B'
-      case 'cancelled':
-        return '#FFA500'
-      default:
-        return '#666'
-    }
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-IN')
+  }
+
+  const getPrice = () => {
+    if (!subscription) return 'N/A'
+    const price =
+      subscription.planType === 'monthly'
+        ? subscription.subscriptionId?.monthlyPrice
+        : subscription.subscriptionId?.yearlyPrice
+
+    return `₹${price}`
   }
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Current Subscription</Text>
-        <Text style={styles.headerSubtitle}>Manage your subscription plan</Text>
-      </View>
-
-      {/* Current Plan Card */}
-      <View style={styles.planCard}>
-        <View style={styles.planHeader}>
-          <View style={styles.planBadge}>
-            <Text style={styles.planBadgeText}>{currentSubscription.plan}</Text>
-          </View>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(currentSubscription.status) }]}>
-            <Text style={styles.statusText}>{currentSubscription.status}</Text>
-          </View>
-        </View>
-
-        <View style={styles.planDetails}>
-          <Text style={styles.planType}>{currentSubscription.plan} {currentSubscription.type}</Text>
-          <Text style={styles.planPrice}>{currentSubscription.price}</Text>
-          
-          <View style={styles.dateContainer}>
-            <View style={styles.dateItem}>
-              <Text style={styles.dateLabel}>Start Date</Text>
-              <Text style={styles.dateValue}>{currentSubscription.startDate}</Text>
-            </View>
-            <View style={styles.dateItem}>
-              <Text style={styles.dateLabel}>End Date</Text>
-              <Text style={styles.dateValue}>{currentSubscription.endDate}</Text>
-            </View>
-          </View>
-
-          {/* Auto Renewal Toggle */}
-          <TouchableOpacity style={styles.autoRenewalContainer} onPress={handleToggleAutoRenewal}>
-            <View style={styles.autoRenewalTextContainer}>
-              <Text style={styles.autoRenewalLabel}>Auto Renewal</Text>
-              <Text style={styles.autoRenewalStatus}>
-                {currentSubscription.autoRenewal ? 'On' : 'Off'}
-              </Text>
-            </View>
-            <View style={[
-              styles.toggleButton,
-              { backgroundColor: currentSubscription.autoRenewal ? '#4CAF50' : '#CCCCCC' }
-            ]}>
-              <View style={styles.toggleCircle} />
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Features Section */}
-      <View style={styles.featuresSection}>
-        <Text style={styles.sectionTitle}>Plan Features</Text>
-        <View style={styles.featuresList}>
-          {currentSubscription.features.map((feature, index) => (
-            <View key={index} style={styles.featureItem}>
-              <Image 
-                source={require('../../assets/images/check.png')}
-                style={styles.featureIcon}
-              />
-              <Text style={styles.featureText}>{feature}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
+        <Text style={styles.title}>Subscription Details</Text>
         <TouchableOpacity 
-          style={styles.primaryButton}
-          onPress={handleBuySubscription}
+          style={styles.buyBtn}
+          onPress={() => navigation.navigate('SubscriptionScreen')}
         >
-          <Text style={styles.primaryButtonText}>Buy New Subscription</Text>
+          <Image source={require('../../assets/images/security.png')} style={styles.icon} />
+          <Text style={styles.buyText}>
+            {subscription ? 'Upgrade' : 'Buy Now'}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Additional Info */}
-      <View style={styles.infoSection}>
-        <Text style={styles.infoTitle}>Need Help?</Text>
-        <Text style={styles.infoText}>
-          If you have any questions about your subscription, contact our support team.
-        </Text>
-        <TouchableOpacity style={styles.supportButton}>
-          <Text style={styles.supportButtonText}>Contact Support</Text>
+      {!subscription ? (
+        // NO SUBSCRIPTION
+        <View style={styles.card}>
+          <Image source={require('../../assets/images/security.png')} style={styles.bigIcon} />
+          <Text style={styles.cardTitle}>No Active Subscription</Text>
+          <Text style={styles.cardText}>Upgrade to unlock premium features</Text>
+
+          <View style={styles.features}>
+            {['More Business Leads', 'Advanced Analytics', 'Priority Support'].map((f, i) => (
+              <View key={i} style={styles.feature}>
+                <Image source={require('../../assets/images/check.png')} style={styles.checkIcon} />
+                <Text style={styles.featureText}>{f}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : (
+        // ACTIVE SUBSCRIPTION UI
+        <>
+          <View style={styles.card}>
+
+            <View style={styles.planHeader}>
+              <View style={[styles.badge, { backgroundColor: '#4A90E2' }]}>
+                <Text style={styles.badgeText}>{subscription.subscriptionId?.planName}</Text>
+              </View>
+
+              <View style={[styles.status, { backgroundColor: '#4CAF50' }]}>
+                <Text style={styles.statusText}>Active</Text>
+              </View>
+            </View>
+
+            <Text style={styles.planType}>{subscription.planType} Plan</Text>
+            <Text style={styles.price}>{getPrice()}</Text>
+
+            <View style={styles.details}>
+              <Detail label="Start Date" value={formatDate(subscription.startDate)} />
+              <Detail label="End Date" value={formatDate(subscription.endDate)} />
+              <Detail label="Business" value={subscription.businessId?.businessName} />
+              <Detail label="Plan Type" value={subscription.planType} />
+            </View>
+{/* 
+            <View style={styles.autoRenewal}>
+              <View>
+                <Text style={styles.autoLabel}>Auto Renewal</Text>
+                <Text style={styles.autoStatus}>On - Auto renews</Text>
+              </View>
+
+              <View style={[styles.toggle, { backgroundColor: '#4CAF50' }]}>
+                <View style={styles.toggleCircle} />
+              </View>
+            </View> */}
+          </View>
+
+          {/* FEATURES */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Plan Features</Text>
+
+            {subscription.subscriptionId?.features?.map((f, i) => (
+              <View key={i} style={styles.feature}>
+                <Image source={require('../../assets/images/check.png')} style={styles.checkIcon} />
+                <Text style={styles.featureText}>{f}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* ACTIONS */}
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={styles.primaryBtn}
+              onPress={() => navigation.navigate('SubscriptionScreen')}
+            >
+              <Text style={styles.btnText}>Buy Subscription Plan</Text>
+            </TouchableOpacity>
+
+            {/* <TouchableOpacity
+              style={styles.secondaryBtn}
+              onPress={() => Alert.alert('Info', 'Cancel feature coming soon')}
+            >
+              <Text style={styles.btnText}>Cancel</Text>
+            </TouchableOpacity> */}
+          </View>
+        </>
+      )}
+
+      {/* SUPPORT */}
+      <View style={styles.support}>
+        <Text style={styles.supportTitle}>Need Help?</Text>
+        <Text style={styles.supportText}>Contact our support team for assistance</Text>
+        <TouchableOpacity style={styles.supportBtn}>
+          <Text style={styles.supportBtnText}>Contact Support</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   )
 }
 
-export default check
+const Detail = ({ label, value }) => (
+  <View style={styles.detail}>
+    <Text style={styles.detailLabel}>{label}</Text>
+    <Text style={styles.detailValue}>{value || 'N/A'}</Text>
+  </View>
+)
+
+export default SubscriptionDetailsScreen
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
+  container: { flex: 1, backgroundColor: '#f8f9fa' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 10, color: '#666' },
+
   header: {
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', padding: 16, backgroundColor: 'white',
+    borderBottomWidth: 1, borderBottomColor: '#E0E0E0'
   },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+  title: { fontSize: 20, fontWeight: 'bold', color: '#333' },
+  buyBtn: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#155DFC', paddingHorizontal: 16,
+    paddingVertical: 10, borderRadius: 20
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#666',
+  icon: { width: 16, height: 16, marginRight: 6, tintColor: 'white' },
+  buyText: { color: 'white', fontWeight: 'bold' },
+
+  card: {
+    backgroundColor: 'white', margin: 16, padding: 20,
+    borderRadius: 12, shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1,
+    shadowRadius: 4, elevation: 2
   },
-  planCard: {
-    backgroundColor: 'white',
-    margin: 16,
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+
+  bigIcon: { width: 60, height: 60, alignSelf: 'center', marginBottom: 12 },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', textAlign: 'center' },
+  cardText: { color: '#666', textAlign: 'center', marginBottom: 16 },
+
+  features: { marginTop: 8 },
+  feature: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  checkIcon: { width: 16, height: 16, marginRight: 8, tintColor: '#4CAF50' },
+  featureText: { color: '#333' },
+
+  planHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  badge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
+  badgeText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
+
+  status: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  statusText: { color: 'white', fontSize: 11, fontWeight: 'bold' },
+
+  planType: { color: '#666', marginBottom: 4 },
+  price: { fontSize: 28, fontWeight: 'bold', color: '#333', marginBottom: 16 },
+
+  details: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 },
+  detail: { width: '50%', marginBottom: 12 },
+  detailLabel: { fontSize: 12, color: '#666' },
+  detailValue: { fontSize: 14, fontWeight: '600', color: '#333' },
+
+  autoRenewal: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F0F0F0'
   },
-  planHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  planBadge: {
-    backgroundColor: '#FFD700',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
-  },
-  planBadgeText: {
-    color: '#333',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-  planDetails: {
-    marginBottom: 12,
-  },
-  planType: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 6,
-  },
-  planPrice: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
-  },
-  dateContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  dateItem: {
-    flex: 1,
-  },
-  dateLabel: {
-    fontSize: 11,
-    color: '#666',
-    marginBottom: 2,
-  },
-  dateValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#333',
-  },
-  autoRenewalContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-  },
-  autoRenewalTextContainer: {
-    flex: 1,
-  },
-  autoRenewalLabel: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
-  },
-  autoRenewalStatus: {
-    fontSize: 13,
-    color: '#666',
-  },
-  toggleButton: {
-    width: 46,
-    height: 24,
-    borderRadius: 12,
-    padding: 2,
-    justifyContent: 'center',
-  },
-  toggleCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'white',
-  },
-  featuresSection: {
-    backgroundColor: 'white',
-    margin: 16,
-    borderRadius: 12,
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  featureIcon: {
-    width: 18,
-    height: 18,
-    marginRight: 10,
-    tintColor: '#4CAF50',
-  },
-  featureText: {
-    fontSize: 14,
-    color: '#333',
-    flex: 1,
-  },
-  actionButtons: {
-    padding: 16,
-  },
-  primaryButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  infoSection: {
-    backgroundColor: 'white',
-    margin: 16,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 6,
-  },
-  infoText: {
-    fontSize: 13,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 12,
-    lineHeight: 18,
-  },
-  supportButton: {
-    backgroundColor: '#2196F3',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  supportButtonText: {
-    color: 'white',
-    fontSize: 13,
-    fontWeight: 'bold',
-  },
+  autoLabel: { fontWeight: '500' },
+  autoStatus: { fontSize: 12, color: '#666' },
+  toggle: { width: 46, height: 24, borderRadius: 12, padding: 2 },
+  toggleCircle: { width: 20, height: 20, borderRadius: 10, backgroundColor: 'white', marginLeft: 22 },
+
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 12 },
+
+  actions: { padding: 16 },
+  primaryBtn: { backgroundColor: '#155DFC', padding: 16, borderRadius: 10, alignItems: 'center', marginBottom: 12 },
+  secondaryBtn: { backgroundColor: '#FF6B6B', padding: 16, borderRadius: 10, alignItems: 'center' },
+  btnText: { color: 'white', fontWeight: 'bold' },
+
+  support: { backgroundColor: 'white', margin: 16, padding: 20, borderRadius: 12, alignItems: 'center' },
+  supportTitle: { fontWeight: 'bold', marginBottom: 6 },
+  supportText: { color: '#666', textAlign: 'center', marginBottom: 12 },
+  supportBtn: { backgroundColor: '#2196F3', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 6 },
+  supportBtnText: { color: 'white', fontWeight: 'bold' },
 })

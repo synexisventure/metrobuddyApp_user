@@ -1,18 +1,20 @@
 import React, { useContext, useEffect, useState } from "react";
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  FlatList, 
-  ActivityIndicator, 
-  Image, 
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  ActivityIndicator,
+  Image,
   TouchableOpacity,
-  ScrollView 
+  ScrollView
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { AppContext } from "../../context/AppContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import CategorySearchHeader from "../../components/commonHeader/CategorySearchHeader";
 
 const CategorySearchScreen = () => {
   const { API_BASE_URL, IMAGE_BASE_URL } = useContext(AppContext);
@@ -31,6 +33,8 @@ const CategorySearchScreen = () => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("token");
+
+      console.log("searching for category : ", categoryId);
 
       const response = await axios.post(
         `${API_BASE_URL}/user/search/by-category`,
@@ -68,11 +72,11 @@ const CategorySearchScreen = () => {
 
   const handleBusinessPress = (business) => {
     // Navigate to business detail screen
-    navigation.navigate("BusinessSingleScreen", { key: business._id });
+    navigation.navigate("BusinessSingleScreen", { key: business });
   };
 
   const renderBusinessCard = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.businessCard}
       onPress={() => handleBusinessPress(item)}
       activeOpacity={0.9}
@@ -99,7 +103,7 @@ const CategorySearchScreen = () => {
         <Text style={styles.businessName} numberOfLines={1}>
           {item.businessName || "Business Name"}
         </Text>
-        
+
         {/* <Text style={styles.businessDescription} numberOfLines={2}>
           {item.description || "No description available"}
         </Text> */}
@@ -143,15 +147,11 @@ const CategorySearchScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>
-          {categoryName || "Category"}
-        </Text>
-        <Text style={styles.headerSubtitle}>
-          {businesses.length} businesses found
-        </Text>
-      </View>
+      {/* Header */} 
+      <CategorySearchHeader
+        categoryName={categoryName}
+        businessCount={businesses.length}
+      />
 
       {/* Content */}
       {businesses.length === 0 ? (
@@ -222,9 +222,9 @@ const styles = StyleSheet.create({
     width: "48%",
     backgroundColor: "#fff",
     borderRadius: 16,
-    marginBottom: 16, 
+    marginBottom: 16,
     overflow: "hidden",
-    borderWidth:0.5,
+    borderWidth: 0.5,
     borderColor: "black"
   },
   imageContainer: {
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     color: "#7f8c8d",
     marginBottom: 8,
   },
-  noDataText: { 
+  noDataText: {
     fontSize: 14,
     color: "#bdc3c7",
     textAlign: "center",

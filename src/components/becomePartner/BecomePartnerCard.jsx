@@ -61,7 +61,7 @@ const BecomePartnerCard = ({ data = {} }) => {
                                     style={styles.starIcon}
                                 />
                                 <Text style={styles.rating}>
-                                    {data?.rating ? `${data.rating} (${data?.reviews || 0})` : 'NA'}
+                                    {data?.rating ? `${data.rating} (${data?.reviews || 0})` : '5.0'}
                                 </Text>
                             </View>
                         </View>

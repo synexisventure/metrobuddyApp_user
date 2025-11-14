@@ -4,68 +4,35 @@ import { ScrollView } from 'react-native-gesture-handler'
 
 const { width } = Dimensions.get('window');
 
-const SubscriptionBodyYearly = () => {
+const SubscriptionBodyYearly = (props) => {
   const [activePackage, setActivePackage] = useState(0);
-
-  const packages = [
-    {
-      name: "Silver",
-      price: "1,499",
-      period: "/year",
-      badge: null,
-      badgeColor: "#C0C0C0",
-      borderColor: "#E0E0E0",
-      buttonColor: "#2196F3",
-      features: [
-        "Basic business listing",
-        "Email support",
-        "5 team members", 
-        "Basic analytics",
-        "Standard support",
-        "Basic reporting"
-      ]
-    },
-    {
-      name: "Gold",
-      price: "2,499",
-      period: "/year", 
-      badge: "Most Popular",
-      badgeColor: "#FFD700",
-      borderColor: "#FFD700",
-      buttonColor: "#4CAF50",
-      features: [
-        "Access to premium tools",
-        "Priority email support",
-        "15 team members",
-        "Advanced analytics dashboard",
-        "Priority support (24/7)",
-        "Advanced reporting"
-      ]
-    },
-    {
-      name: "Platinum", 
-      price: "4,999",
-      period: "/year",
-      badge: "Best Value",
-      badgeColor: "#E5E4E2",
-      borderColor: "#E5E4E2",
-      buttonColor: "#9C27B0",
-      features: [
-        "All Gold features +",
-        "Unlimited team members",
-        "Dedicated account manager",
-        "Custom analytics dashboard",
-        "White-label solutions",
-        "API access included"
-      ]
-    }
-  ];
 
   const onScroll = (event) => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;
     const index = event.nativeEvent.contentOffset.x / slideSize;
     setActivePackage(Math.round(index));
   };
+
+  const handleSubscribe = (pkg) => {
+    if (props.onSubscriptionPress) {
+      props.onSubscriptionPress(pkg, 'yearly');
+    }
+  };
+
+  const isCurrentPlan = (pkgId) => {
+    return props.currentSubscription?.subscriptionId?._id === pkgId;
+  };
+
+  // Use actual plans from API props
+  const packages = props.subscriptionPlans || [];
+
+  if (packages.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>No subscription plans available</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -78,7 +45,7 @@ const SubscriptionBodyYearly = () => {
         style={styles.scrollView}
       >
         {packages.map((pkg, index) => (
-          <View key={index} style={styles.slide}>
+          <View key={pkg._id} style={styles.slide}>
             {/* Package Badge */}
             {pkg.badge && (
               <View style={styles.badge}>
@@ -86,8 +53,18 @@ const SubscriptionBodyYearly = () => {
               </View>
             )}
             
+            {/* Current Plan Badge */}
+            {isCurrentPlan(pkg._id) && (
+              <View style={styles.currentPlanBadge}>
+                <Text style={styles.currentPlanBadgeText}>Current Plan</Text>
+              </View>
+            )}
+            
             {/* Plan Card */}
-            <View style={[styles.card, { borderColor: pkg.borderColor }]}>
+            <View style={[styles.card, { 
+              borderColor: isCurrentPlan(pkg._id) ? '#4CAF50' : pkg.borderColor,
+              borderWidth: isCurrentPlan(pkg._id) ? 3 : 2
+            }]}>
               {/* Plan Header */}
               <View style={styles.header}>
                 <View style={[styles.packageBadge, { backgroundColor: pkg.badgeColor }]}>
@@ -115,9 +92,21 @@ const SubscriptionBodyYearly = () => {
                 ))}
               </View>
               
-              {/* Subscribe Button */}
-              <TouchableOpacity style={[styles.subscribeButton, { backgroundColor: pkg.buttonColor }]}>
-                <Text style={styles.subscribeButtonText}>Subscribe Now</Text>
+              {/* Buy Button */}
+              <TouchableOpacity 
+                style={[
+                  styles.buyButton, 
+                  { 
+                    backgroundColor: isCurrentPlan(pkg._id) ? '#6c757d' : pkg.buttonColor,
+                    opacity: isCurrentPlan(pkg._id) ? 0.7 : 1
+                  }
+                ]}
+                onPress={() => handleSubscribe(pkg)}
+                disabled={isCurrentPlan(pkg._id)}
+              >
+                <Text style={styles.buyButtonText}>
+                  {isCurrentPlan(pkg._id) ? 'Current Plan' : 'Buy Now'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -151,6 +140,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 20,
   },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
   scrollView: {
     width: width,
   },
@@ -158,6 +157,7 @@ const styles = StyleSheet.create({
     width: width - 40,
     marginHorizontal: 20,
     alignItems: 'center',
+    position: 'relative',
   },
   badge: {
     backgroundColor: '#FF6B6B',
@@ -168,6 +168,22 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   badgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  currentPlanBadge: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: -10,
+    zIndex: 1,
+    position: 'absolute',
+    top: -5,
+    right: 10,
+  },
+  currentPlanBadgeText: {
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
@@ -185,7 +201,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 5,
-    borderWidth: 2,
   },
   header: {
     alignItems: 'center',
@@ -241,12 +256,12 @@ const styles = StyleSheet.create({
     color: '#333',
     flex: 1,
   },
-  subscribeButton: {
+  buyButton: {
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
-  subscribeButtonText: {
+  buyButtonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
@@ -268,4 +283,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
-})
+});

@@ -17,7 +17,7 @@ const BusinessSingleScreen = () => {
   const route = useRoute();
   const { key } = route.params; // key : id from navigation
 
-  const { API_BASE_URL } = useContext(AppContext);
+  const { API_BASE_URL , handleApiError } = useContext(AppContext);
 
 
   const [activeTab, setActiveTab] = useState("Overview");
@@ -28,7 +28,7 @@ const BusinessSingleScreen = () => {
   useEffect(() => {
     const fetchBusinessDetails = async () => {
 
-      console.log("fetching for key : ", key.businessId || key);
+      console.log("fetching for key : ", key.businessId );
 
       try {
         setLoading(true);
@@ -36,7 +36,7 @@ const BusinessSingleScreen = () => {
 
         const token = await AsyncStorage.getItem("token");
 
-        const response = await axios.get(`${API_BASE_URL}/user/business/${key.businessId || key}`,
+        const response = await axios.get(`${API_BASE_URL}/user/business/${key.businessId }`,
         // const response = await axios.get(`${API_BASE_URL}/user/business/6908de84d2431590add9ec07`,
           {
             headers: {
@@ -54,7 +54,8 @@ const BusinessSingleScreen = () => {
         }
       } catch (err) {
         console.error("Error fetching business:", err?.response);
-        setError("Something went wrong while fetching business details.");
+        const msg = handleApiError(err);
+        setError(msg);
       } finally {
         setLoading(false);
       }

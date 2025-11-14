@@ -6,11 +6,11 @@ export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
 
-  // const API_BASE_URL = "http://192.168.1.4:7000/api";
-  // const IMAGE_BASE_URL = "http://192.168.1.4:7000";
+  const API_BASE_URL = "http://192.168.1.2:7000/api";
+  const IMAGE_BASE_URL = "http://192.168.1.2:7000";
 
-    const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
-  const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";
+  //   const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
+  // const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";
 
   // ERROR HANDLER 
   const [networkError, setNetworkError] = useState(false);
