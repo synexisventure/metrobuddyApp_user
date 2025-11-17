@@ -14,6 +14,13 @@ const ProfileBody = () => {
       screen: "BecomePartnerScreen",
     },
     {
+      id: 9,
+      icon: require("../../assets/images/ticket.png"),
+      title: "Raise a Ticket",
+      subtitle: "Report an Issue",
+      screen: "RaiseTicketScreen",
+    },
+    {
       id: 1,
       icon: require("../../assets/images/heart.png"),
       title: "Saved Businesses",

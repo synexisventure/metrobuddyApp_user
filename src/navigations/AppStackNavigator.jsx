@@ -35,6 +35,9 @@ import CategorySearchScreen from "../screens/categorySearch/CategorySearchScreee
 import SingleBusinessLeadScreen from "../screens/leads/SingleBusinessLeadScreen";
 import LeadsScreen from '../screens/leads/LeadsScreen'; 
 
+// raise ticket
+import RaiseTicketScreen from "../screens/raiseTicket/RaiseTicketScreen";
+
 const Stack = createNativeStackNavigator();
 
 const AppStackNavigator = () => {
@@ -74,6 +77,9 @@ const AppStackNavigator = () => {
             {/* leads screen */}
             <Stack.Screen name="LeadsScreen" component={LeadsScreen} />
             <Stack.Screen name="SingleLeadScreen" component={SingleBusinessLeadScreen} />
+
+            {/* ticket screen */}
+            <Stack.Screen name="RaiseTicketScreen" component={RaiseTicketScreen} />
 
         </Stack.Navigator>
     )

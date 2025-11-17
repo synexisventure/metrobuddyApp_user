@@ -5,7 +5,7 @@ import RootNavigator from "./src/navigations/RootNavigator";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { AppProvider } from './src/context/AppContext';
+import { AppProvider } from './src/context/AppContext'; 
 
 const App = () => {
   return (
