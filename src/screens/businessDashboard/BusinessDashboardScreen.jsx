@@ -3,15 +3,15 @@ import { StyleSheet, View, ScrollView, Text } from "react-native";
 
 import HeaderCard from "../../components/businessDashboard/HeaderCard";
 
-import DashboardHeader from "../../components/businessDashboard2/DashboardHeader";
-import DashboardDetails from "../../components/businessDashboard2/DashboardDetails";
-import DashboardFilter from "../../components/businessDashboard2/DashboardFilter";
-import DashboardOverview from "../../components/businessDashboard2/DashboardOverview";
-import DashboardReviews from "../../components/businessDashboard2/DashboardReviews";
-import DashboardPhotos from "../../components/businessDashboard2/DashboardPhotos";
+import DashboardHeader from "../../components/businessDashboard/DashboardHeader";
+import DashboardDetails from "../../components/businessDashboard/DashboardDetails";
+import DashboardFilter from "../../components/businessDashboard/DashboardFilter";
+import DashboardOverview from "../../components/businessDashboard/DashboardOverview";
+import DashboardReviews from "../../components/businessDashboard/DashboardReviews";
+import DashboardPhotos from "../../components/businessDashboard/DashboardPhotos";
 import StepFormsHeader from "../../components/becomePartner/StepFormsHeader";
-import DashboardProduct from "../../components/businessDashboard2/DashboardProduct";
-import DashboardPersonalWallet from "../../components/businessDashboard2/DashboardPersonalWallet";
+import DashboardProduct from "../../components/businessDashboard/DashboardProduct";
+import DashboardPersonalWallet from "../../components/businessDashboard/DashboardPersonalWallet";
 
 import { useFocusEffect } from "@react-navigation/native";
 import { AppContext } from "../../context/AppContext";
