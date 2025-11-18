@@ -28,7 +28,7 @@ const BusinessSingleScreen = () => {
   useEffect(() => {
     const fetchBusinessDetails = async () => {
 
-      console.log("fetching for key : ", key.businessId );
+      console.log("fetching for key : ", key.businessId || key );
 
       try {
         setLoading(true);
@@ -36,7 +36,7 @@ const BusinessSingleScreen = () => {
 
         const token = await AsyncStorage.getItem("token");
 
-        const response = await axios.get(`${API_BASE_URL}/user/business/${key.businessId }`,
+        const response = await axios.get(`${API_BASE_URL}/user/business/${key.businessId || key}`,
         // const response = await axios.get(`${API_BASE_URL}/user/business/6908de84d2431590add9ec07`,
           {
             headers: {
@@ -108,7 +108,7 @@ const BusinessSingleScreen = () => {
         business={business.businessDetails}
         contact={business.contactDetails}
         category={business.businessCategory}
-        businessId="6906f87f301de96d720cba1c" // static businessId
+        businessId="6906f87f301de96d720cba1c" // static businessId 
       />
 
 

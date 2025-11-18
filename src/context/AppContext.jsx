@@ -6,13 +6,13 @@ export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
 
-  const API_BASE_URL = "http://192.168.1.2:7000/api";
-  const IMAGE_BASE_URL = "http://192.168.1.2:7000";
+  const API_BASE_URL = "http://192.168.1.40:7000/api";
+  const IMAGE_BASE_URL = "http://192.168.1.40:7000";
 
   // const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
   // const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";  
 
-  // ERROR HANDLER 
+  // ERROR HANDLER
   const [networkError, setNetworkError] = useState(false);
   const handleApiError = (error, defaultMessage = "Something went wrong") => {
     console.error("API Error:", error?.response?.data || error?.message || error);
@@ -212,6 +212,36 @@ export const AppProvider = ({ children }) => {
   };
 
 
+  // trending now api 
+  // Trending businesses state
+  const [trendingBusinesses, setTrendingBusinesses] = useState([]);
+  const [trendingLoading, setTrendingLoading] = useState(false);
+  const fetchTrendingBusinesses = async () => {
+    setTrendingLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await axios.get(`${API_BASE_URL}/user/trending`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      console.log("My resp data : ", response.data);
+
+      setTrendingBusinesses(response.data.data);
+      setNetworkError(false);
+
+    } catch (error) {
+      handleApiError(error, "Failed to fetch trending businesses");
+      console.log("treding api err : ", error.response);
+
+      setTrendingBusinesses([]);
+    } finally {
+      setTrendingLoading(false);
+    }
+  };
+
+
+
 
 
   // PROVIDER EXPORT 
@@ -278,7 +308,10 @@ export const AppProvider = ({ children }) => {
         formStatusLoading,
         fetchFormStatus,
 
-        // 
+        // trending now api
+        trendingBusinesses,
+        trendingLoading,
+        fetchTrendingBusinesses,
 
       }}
     >
