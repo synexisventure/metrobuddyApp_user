@@ -24,7 +24,7 @@ const TrendingBusinessesHeader = () => {
 
         <View>
           <Text style={styles.title}>Trending Businesses</Text>
-          <Text style={styles.subtitle}>6 popular{"\n"}businesses</Text>
+          <Text style={styles.subtitle}> Popular businesses</Text>
         </View>
       </View>
 

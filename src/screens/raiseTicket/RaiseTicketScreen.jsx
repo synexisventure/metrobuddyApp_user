@@ -214,7 +214,7 @@ const RaiseTicketScreen = ({ navigation }) => {
                             onChangeText={setDescription}
                             multiline
                             numberOfLines={5}
-                            textAlignVertical="top"
+                            textAlignVertical="top" 
                         />
 
                         <View style={styles.modalActions}>

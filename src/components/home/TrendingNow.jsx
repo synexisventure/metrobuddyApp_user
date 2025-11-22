@@ -104,7 +104,7 @@ const TrendingNow = () => {
       ) : (
         <View style={styles.listContainer}>
           {trendingBusinesses.map((item) => (
-            <TrendingItem key={item.id} item={item} />
+            <TrendingItem key={item._id} item={item} />
           ))}
         </View>
       )}

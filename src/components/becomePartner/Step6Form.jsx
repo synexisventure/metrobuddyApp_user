@@ -19,8 +19,14 @@ import {
   requestGalleryPermission,
 } from "../../utils/permissions";
 
-const Step6Form = ({ onNext = ()=>{} }) => {
-  const { API_BASE_URL, IMAGE_BASE_URL, handleApiError, businessMedia, setBusinessMedia } = useContext(AppContext);
+const Step6Form = ({ onNext = () => { } }) => {
+  const {
+    API_BASE_URL,
+    IMAGE_BASE_URL,
+    handleApiError,
+    businessMedia,
+    setBusinessMedia
+  } = useContext(AppContext);
 
   const [photos, setPhotos] = useState([]);
   const [video, setVideo] = useState(null);
@@ -306,7 +312,13 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 20,
   },
-  previewImage: { width: 80, height: 80, borderRadius: 8 },
+  previewImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    borderWidth: 0.5,
+    borderColor: "#000"
+  },
   videoBox: {
     borderWidth: 1,
     borderColor: "#d3d3d3",

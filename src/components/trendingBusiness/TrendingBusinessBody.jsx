@@ -1,135 +1,88 @@
-import React from "react";
+import React, { useContext } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import { AppContext } from "../../context/AppContext";
+import { useNavigation } from "@react-navigation/native";
 
 const TrendingBusinessBody = () => {
-    
-  const businesses = [
-    {
-      id: "1",
-      name: "The Grand Plaza Hotel",
-      category: "Hotels",
-      rating: 4.8,
-      reviews: 1200,
-      distance: "1.2 km",
-      address: "123 Marine Drive, Mumbai",
-      hours: "24/7",
-      image: require("../../assets/images/images2/city.png"),
-      trending: true,
-    },
-    {
-      id: "2",
-      name: "Bella Vista Restaurant",
-      category: "Restaurants",
-      rating: 4.6,
-      reviews: 850,
-      distance: "0.8 km",
-      address: "456 Linking Road, Bandra West, Mumbai",
-      hours: "11:00 AM - 11:00 PM",
-      image: require("../../assets/images/images2/city.png"),
-      trending: false,
-    },
-    {
-      id: "3",
-      name: "Serenity Spa & Wellness",
-      category: "Beauty & Spa",
-      rating: 4.9,
-      reviews: 650,
-      distance: "1.5 km",
-      address: "789 Hill Road, Bandra West, Mumbai",
-      hours: "9:00 AM - 9:00 PM",
-      image: require("../../assets/images/images2/city.png"),
-      trending: true,
-    },
-    {
-      id: "4",
-      name: "Bella Vista Restaurant",
-      category: "Restaurants",
-      rating: 4.6,
-      reviews: 850,
-      distance: "0.8 km",
-      address: "456 Linking Road, Bandra West, Mumbai",
-      hours: "11:00 AM - 11:00 PM",
-      image: require("../../assets/images/images2/city.png"),
-      trending: false,
-    },
-    {
-      id: "5",
-      name: "Serenity Spa & Wellness",
-      category: "Beauty & Spa",
-      rating: 4.9,
-      reviews: 650,
-      distance: "1.5 km",
-      address: "789 Hill Road, Bandra West, Mumbai",
-      hours: "9:00 AM - 9:00 PM",
-      image: require("../../assets/images/images2/city.png"),
-      trending: true,
-    },
-  ];
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.imageContainer}>
-        <Image source={item.image} style={styles.image} />
-        {item.trending && (
-          <View style={styles.trendingBadge}>
-            <Text style={styles.trendingText}>Trending</Text>
+  const navigation = useNavigation();
+
+  // 🔥 REAL DATA COMING FROM CONTEXT
+  const { trendingBusinesses, trendingLoading } = useContext(AppContext);
+
+  const renderItem = ({ item }) => {
+
+    const business = item.businessDetails;
+
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => {
+          navigation.navigate("BusinessSingleScreen", { key: business.businessId });
+        }}
+      >
+        {/* Image */}
+        <View style={styles.imageContainer}>
+          <Image
+            source={
+              business.logo
+                ? { uri: business.logo }
+                : require("../../assets/images/placeholder.png")
+            }
+            style={styles.image}
+          />
+
+          {item.trending && (
+            <View style={styles.trendingBadge}>
+              <Text style={styles.trendingText}>Trending</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Details */}
+        <View style={styles.infoContainer}>
+          <View style={styles.headerRow}>
+            <Text style={styles.name}>{business.businessName}</Text>
+
+            <View style={styles.checkBadge}>
+              <Image
+                source={require("../../assets/images/check.png")}
+                style={styles.checkIcon}
+              />
+            </View>
           </View>
-        )}
-      </View>
 
-      <View style={styles.infoContainer}>
-        <View style={styles.headerRow}>
-          <Text style={styles.name}>{item.name}</Text>
-          <View style={styles.checkBadge}>
+          {/* <Text style={styles.category}>{business.category || "Category"}</Text> */}
+          <Text style={styles.category}>
+            {business.description
+              ? business.description.length > 16
+                ? business.description.slice(0, 16) + "..."
+                : business.description
+              : "No description"}
+          </Text>
+
+          <View style={styles.row}>
             <Image
-              source={require("../../assets/images/check.png")}
-              style={styles.checkIcon}
+              source={require("../../assets/images/star.png")}
+              style={styles.iconSmall}
             />
+            <Text style={styles.rating}>{item.score || "5.0"}</Text>
           </View>
         </View>
+      </TouchableOpacity>
+    );
+  };
 
-        <Text style={styles.category}>{item.category}</Text>
-
-        <View style={styles.row}>
-          <Image
-            source={require("../../assets/images/star.png")}
-            style={styles.iconSmall}
-          />
-          <Text style={styles.rating}>{item.rating}</Text>
-          <Text style={styles.review}> ({item.reviews}) • {item.distance}</Text>
-        </View>
-
-        <View style={styles.row}>
-          <Image
-            source={require("../../assets/images/location.png")}
-            style={styles.iconSmall}
-          />
-          <Text style={styles.address}>{item.address}</Text>
-        </View>
-
-        <View style={styles.row}>
-          <Image
-            source={require("../../assets/images/clock.png")}
-            style={styles.iconSmall}
-          />
-          <Text style={styles.hours}>{item.hours}</Text>
-          <TouchableOpacity style={styles.callButton}>
-            <Image
-              source={require("../../assets/images/phone.png")}
-              style={styles.callIcon}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
+  if (trendingLoading) {
+    return <Text style={{ textAlign: "center", marginTop: 30 }}>Loading...</Text>;
+  }
 
   return (
     <FlatList
-      data={businesses}
+      data={trendingBusinesses}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
-      showsVerticalScrollIndicator={false} 
+      showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingHorizontal: 16,
         paddingTop: 10,

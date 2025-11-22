@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { StyleSheet, View, ScrollView, Text } from "react-native";
 
-import HeaderCard from "../../components/businessDashboard/HeaderCard";
+// import HeaderCard from "../../components/businessDashboard/HeaderCard";
 
 import DashboardHeader from "../../components/businessDashboard/DashboardHeader";
 import DashboardDetails from "../../components/businessDashboard/DashboardDetails";
