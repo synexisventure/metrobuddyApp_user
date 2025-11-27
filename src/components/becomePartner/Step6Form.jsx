@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -34,18 +35,24 @@ const Step6Form = ({ onNext = () => { } }) => {
   const [videos, setVideos] = useState([]);
   const [businessId, setBusinessId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [playingVideo, setPlayingVideo] = useState(null);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [videoModalVisible, setVideoModalVisible] = useState(false);
+
+  // Add this function
+  const handleVideoPress = (video) => {
+    setSelectedVideo(video.uri);
+    setVideoModalVisible(true);
+  };
 
   const [modalVisible, setModalVisible] = useState(false);
   const [activeType, setActiveType] = useState(null);
 
   // 🔹 Load business ID
-  // useEffect(() => {
-  //   const loadBusinessId = async () => {
-  //     const savedId = await AsyncStorage.getItem("businessId");
-  //     if (savedId) setBusinessId(savedId);
-  //   };
-  //   loadBusinessId();
-  // }, []);
+  useEffect(() => {
+    console.log("my business media from form : ", businessMedia);
+
+  }, []);
   useEffect(() => {
     const loadBusinessId = async () => {
       const savedId = await AsyncStorage.getItem("businessId");
@@ -73,6 +80,8 @@ const Step6Form = ({ onNext = () => { } }) => {
         type: "video/mp4",
         fileName: v.url.split("/").pop()
       }));
+
+      console.log("url to existing videos : ", existingVideos);
 
       setVideos(existingVideos);
     } else {
@@ -122,7 +131,7 @@ const Step6Form = ({ onNext = () => { } }) => {
     setActiveType(type);
     setModalVisible(true);
   };
- 
+
   const handleSaveAndContinue = async () => {
     if (!businessId) {
       Alert.alert("Error", "No business ID found");
@@ -236,13 +245,16 @@ const Step6Form = ({ onNext = () => { } }) => {
             try {
               const token = await AsyncStorage.getItem("token");
 
-              await axios.delete(
+              const resp = await axios.delete(
                 `${API_BASE_URL}/user/partner_forms/${businessId}/photo-video`,
                 {
                   headers: { Authorization: `Bearer ${token}` },
                   data: { mediaId, type },
                 }
               );
+
+              console.log("my media delete api resp : ", resp);
+
 
               // Remove from UI
               if (type === "photo") {
@@ -327,7 +339,6 @@ const Step6Form = ({ onNext = () => { } }) => {
 
 
       {/* add video section ====================================================================== */}
-
       <Text style={[styles.sectionLabel, { marginTop: 25 }]}>
         Business Videos (Optional)
       </Text>
@@ -336,10 +347,6 @@ const Step6Form = ({ onNext = () => { } }) => {
       <TouchableOpacity
         style={styles.videoBox}
         onPress={() => handleUploadPress("video")}
-      // onPress={() => {
-      //   setActiveType("video");
-      //   setTimeout(() => handleSelect("gallery"), 1);
-      // }}
       >
         <Image
           source={require("../../assets/images/video.png")}
@@ -349,11 +356,28 @@ const Step6Form = ({ onNext = () => { } }) => {
         <Text style={styles.videoHint}>Max 30 seconds</Text>
       </TouchableOpacity>
 
-      {/* {video && (
-        <View style={styles.mediaBox}>
-          <Text style={styles.videoSelected}>
-            🎥 {video.fileName || "1 video selected"}
-          </Text>
+      {/* video preview section =================*/}
+      {videos.map((video, idx) => (
+        <View key={idx} style={{ marginTop: 10, position: 'relative' }}>
+          <TouchableOpacity onPress={() => handleVideoPress(video)}>
+            <Video
+              source={{ uri: video.uri }}
+              style={{ width: "100%", height: 200, borderRadius: 10, marginBottom: 10 }}
+              resizeMode="cover"
+              paused={true}
+              muted={true}
+            />
+            {/* Video Play Overlay */} 
+            <View style={styles.videoOverlay}>
+              <View style={styles.playButton}>
+                <Text style={styles.playIcon}>▶</Text>
+              </View>
+            </View>
+            {/* Video Badge */}
+            <View style={styles.videoBadge}>
+              <Text style={styles.videoBadgeText}>Video</Text>
+            </View>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.deleteBtn}
@@ -362,30 +386,7 @@ const Step6Form = ({ onNext = () => { } }) => {
             <Text style={styles.deleteText}>✕</Text>
           </TouchableOpacity>
         </View>
-      )} */}
-      {/* {videos.map((video, idx) => ( */}
-      {Array.isArray(videos) &&
-        videos.map((video, idx) => (
-          <View key={idx} style={{ marginTop: 10 }}>
-            <Video
-              source={{ uri: video.uri }}
-              style={{ width: "100%", height: 200, borderRadius: 10, marginBottom : 10 }}
-              resizeMode="cover"
-              paused={true}
-              controls={true}
-            />
-
-            <TouchableOpacity
-              style={styles.deleteBtn}
-              onPress={() => deleteMedia(video._id, "video")}
-            >
-              <Text style={styles.deleteText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-
-
-
+      ))}
 
       <TouchableOpacity
         style={styles.saveBtn}
@@ -396,6 +397,38 @@ const Step6Form = ({ onNext = () => { } }) => {
           {loading ? "Uploading..." : "Save and Continue"}
         </Text>
       </TouchableOpacity>
+
+      {/* video preview model */}
+      <Modal
+        visible={videoModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setVideoModalVisible(false)}
+      >
+        <View style={styles.videoModal}>
+          <View style={styles.videoModalHeader}>
+            <TouchableOpacity onPress={() => setVideoModalVisible(false)} style={styles.closeButton}>
+              <Text style={styles.closeIcon}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.videoPlayerContainer}>
+            {selectedVideo && (
+              <Video
+                source={{ uri: selectedVideo }}
+                style={styles.fullScreenVideo}
+                resizeMode="contain"
+                controls={true}
+                paused={false}
+                onError={(error) => {
+                  console.log('Video playback error:', error);
+                  Alert.alert("Error", "Failed to play video");
+                  setVideoModalVisible(false);
+                }}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
 
       <FilePickerModal
         visible={modalVisible}
@@ -503,4 +536,81 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
 
+  // video preview style
+  videoOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 10,
+  },
+  playButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(21, 93, 252, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  playIcon: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 3,
+  },
+  videoBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  videoBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+
+  // Video Modal Styles
+  videoModal: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  videoModalHeader: {
+    position: 'absolute',
+    top: 50,
+    left: 16,
+    right: 16,
+    zIndex: 10,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeIcon: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  videoPlayerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullScreenVideo: {
+    width: '100%',
+    height: '100%',
+  },
 });

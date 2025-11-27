@@ -79,7 +79,7 @@ const BecomePartnerScreen = () => {
         return total + (business.leadCount || 0);
     }, 0);
 
-    if (isBusinessListLoading && !businessList) {
+    if (isBusinessListLoading && businessList.length === 0) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#155DFC" />
