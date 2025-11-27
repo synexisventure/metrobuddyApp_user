@@ -7,8 +7,7 @@ import HomeScreen from "../screens/home/HomeScreen";
 import ProfileStackNavigation from './profile/ProfileStackNavigation';
 import CategoryScreen from "../screens/category/CategoryScreen";
 import FavoritesScreen from "../screens/favorites/FavoritesScreen";
-import FranchiseScreen from "../screens/franchise/FranchiseScreen";
-import LeadsScreen from "../screens/leads/LeadsScreen";
+import FranchiseScreen from "../screens/franchise/FranchiseScreen"; 
 import BecomePartnerScreen from '../screens/BecomePartner/BecomePartnerScreen';
 
 const Tab = createBottomTabNavigator();

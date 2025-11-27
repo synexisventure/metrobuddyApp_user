@@ -10,7 +10,8 @@ import {
     SafeAreaView,
     StatusBar,
     Image,
-    StyleSheet
+    StyleSheet, 
+    Dimensions
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -18,74 +19,76 @@ import { AppContext } from "../../context/AppContext";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import LinearGradient from 'react-native-linear-gradient';
 
+const { width: screenWidth } = Dimensions.get('window');
+
 const LeadDetailsScreen = () => {
     const route = useRoute();
     const navigation = useNavigation();
-    const { businessId, sourceType, sourceName } = route.params || {};
+    const { businessId, sourceType, sourceName, businessName } = route.params || {};
 
     const { API_BASE_URL } = useContext(AppContext);
 
-    const [leadData, setLeadData] = useState(null);
+    const [leadData, setLeadData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalLeads, setTotalLeads] = useState(0);
 
-    // Icons - EXACTLY as you have
+    // Icons
     const icons = {
         backArrow: require('../../assets/images/backArrow.png'),
         profile: require('../../assets/images/user.png'),
         call: require('../../assets/images/phone.png'),
         message: require('../../assets/images/mail.png'),
-        map: require('../../assets/images/bell.png'),
+        map: require('../../assets/images/location.png'),
         refresh: require('../../assets/images/recent.png'),
+        clock: require('../../assets/images/clock.png'),
     };
 
-    // Activity configuration
+    // Activity configuration with original colors
     const activityConfig = {
         viewProfile: {
             displayName: 'Profile Views',
-            color: '#009FFF',
-            gradient: ['#009FFF', '#006DFF'],
-            icon: icons.profile
+            color: '#4A90E2',
+            gradient: ['#667eea', '#764ba2'],
+            icon: icons.profile,
+            bgColor: '#E3F2FD'
         },
         call: {
             displayName: 'Calls',
-            color: '#BDB2FA',
-            gradient: ['#BDB2FA', '#8F80F3'],
-            icon: icons.call
+           color: '#4A90E2',
+            gradient: ['#667eea', '#764ba2'],
+            icon: icons.profile,
+            bgColor: '#E3F2FD'
         },
         message: {
             displayName: 'Messages',
-            color: '#93FCF8',
-            gradient: ['#93FCF8', '#3BE9DE'],
-            icon: icons.message
+            color: '#4A90E2',
+            gradient: ['#667eea', '#764ba2'],
+            icon: icons.profile,
+            bgColor: '#E3F2FD'
         },
         map: {
-            displayName: 'Map Views',
-            color: '#FFA07A',
-            gradient: ['#FFA07A', '#FF7F50'],
-            icon: icons.map
+            displayName: 'Direction Views',
+             color: '#4A90E2',
+            gradient: ['#667eea', '#764ba2'],
+            icon: icons.profile,
+            bgColor: '#E3F2FD'
         },
     };
 
     const currentActivity = activityConfig[sourceType] || activityConfig.viewProfile;
 
-    const formatDate = (date) => {
-        if (!date) return "N/A";
-        try {
-            return new Date(date).toLocaleDateString('en-IN', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
-        } catch {
-            return "N/A";
-        }
+    const formatTime = (time) => {
+        if (!time) return "N/A";
+        return time;
     };
 
-    // Fetch Lead Details
-    const fetchLeadDetails = async (showRefresh = false) => {
-        if (!showRefresh) setLoading(true);
+    // Fetch Lead Details with Pagination
+    const fetchLeadDetails = async (page = 1, showRefresh = false) => {
+        if (!showRefresh && page === 1) setLoading(true);
         else setRefreshing(true);
 
         const endpoint = sourceType === "viewProfile" ? "view-profile" : sourceType;
@@ -93,10 +96,8 @@ const LeadDetailsScreen = () => {
         try {
             const token = await AsyncStorage.getItem("token");
 
-            console.log("api call for id ", businessId);
-
             const response = await axios.get(
-                `${API_BASE_URL}/user/business/leads/${endpoint}/${businessId}`,
+                `${API_BASE_URL}/user/business/leads/${endpoint}/${businessId}?page=${page}&limit=5`,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -105,15 +106,11 @@ const LeadDetailsScreen = () => {
                 }
             );
 
-            console.log("my resp of ", sourceType, " ", response.data);
-
             if (response.data?.success) {
-                setLeadData({
-                    totalLeads: response.data.total,
-                    currentPage: response.data.currentPage,
-                    totalPages: response.data.totalPages,
-                    data: response.data.users,
-                });
+                setLeadData(response.data.users || []);
+                setCurrentPage(page);
+                setTotalPages(response.data.totalPages || 1);
+                setTotalLeads(response.data.total || 0);
                 setError(null);
             } else {
                 throw new Error(response.data?.message || "Failed to fetch lead details");
@@ -121,15 +118,29 @@ const LeadDetailsScreen = () => {
         } catch (err) {
             console.error("Error:", err);
             setError(err.message);
-            Alert.alert("Error", "Failed to load lead details.");
+            if (page === 1) {
+                Alert.alert("Error", "Failed to load lead details.");
+            }
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
     };
 
+    // Handle page change
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            fetchLeadDetails(page);
+        }
+    };
+
+    // Refresh function
+    const onRefresh = () => {
+        fetchLeadDetails(1, true);
+    };
+
     useEffect(() => {
-        fetchLeadDetails();
+        fetchLeadDetails(1);
     }, []);
 
     const handleCall = (phone) => {
@@ -146,146 +157,241 @@ const LeadDetailsScreen = () => {
         ]);
     };
 
+    // Generate page numbers to display - Responsive based on screen width
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisiblePages = screenWidth < 400 ? 3 : screenWidth < 500 ? 4 : 5;
+        
+        if (totalPages <= maxVisiblePages) {
+            // Show all pages if total pages are less than max visible
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            // Show pages with ellipsis
+            if (currentPage <= 3) {
+                // Near the start
+                for (let i = 1; i <= maxVisiblePages - 1; i++) {
+                    pages.push(i);
+                }
+                pages.push('...');
+                pages.push(totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                // Near the end
+                pages.push(1);
+                pages.push('...');
+                for (let i = totalPages - (maxVisiblePages - 2); i <= totalPages; i++) {
+                    pages.push(i);
+                }
+            } else {
+                // In the middle
+                pages.push(1);
+                pages.push('...');
+                const start = Math.max(2, currentPage - 1);
+                const end = Math.min(totalPages - 1, currentPage + 1);
+                for (let i = start; i <= end; i++) {
+                    pages.push(i);
+                }
+                pages.push('...');
+                pages.push(totalPages);
+            }
+        }
+        
+        return pages;
+    };
+
     const renderLeadItem = ({ item: user, index }) => {
         const phone = user?.userId?.phone ?? "Anonymous User";
         const email = user?.userId?.email ?? "No Email";
         const isAnonymous = !user?.userId;
+        const mainActivityCount = user?.[sourceType] || user?.viewProfile || 0;
 
         return (
-            <View style={[
-                styles.card,
-                index % 2 === 0 ? styles.cardEven : styles.cardOdd
-            ]}>
-                {/* User Header */}
+            <View style={styles.card}>
+                {/* User Header Section */}
                 <View style={styles.userHeader}>
-                    <View style={styles.userAvatar}>
-                        <Image source={icons.profile} style={styles.avatarIcon} />
+                    <View style={styles.avatarContainer}>
+                        <View style={[
+                            styles.avatar,
+                            { backgroundColor: currentActivity.bgColor }
+                        ]}>
+                            <Image 
+                                source={icons.profile} 
+                                style={styles.avatarIcon}
+                            />
+                        </View>
+                        {!isAnonymous && (
+                            <View style={styles.onlineIndicator} />
+                        )}
                     </View>
+                    
                     <View style={styles.userInfo}>
-                        <Text style={styles.userPhone}>
+                        <Text style={styles.userName}>
                             {isAnonymous ? "Anonymous User" : phone}
                         </Text>
                         <Text style={styles.userEmail}>{email}</Text>
-                        {!isAnonymous && (
-                            <View style={styles.actionButtons}>
-                                <TouchableOpacity 
-                                    style={styles.actionButton}
-                                    onPress={() => handleCall(phone)}
-                                >
-                                    <Image source={icons.call} style={styles.actionIcon} />
-                                    <Text style={styles.actionText}>Call</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity 
-                                    style={styles.actionButton}
-                                    onPress={() => handleMessage(email)}
-                                >
-                                    <Image source={icons.message} style={styles.actionIcon} />
-                                    <Text style={styles.actionText}>Email</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
+                        
+                        <View style={[styles.activityBadge, { backgroundColor: currentActivity.color }]}>
+                            <Image 
+                                source={currentActivity.icon} 
+                                style={styles.activityBadgeIcon}
+                            />
+                            <Text style={styles.activityBadgeText}>
+                                {mainActivityCount} {currentActivity.displayName}
+                            </Text>
+                        </View>
                     </View>
-                </View>
-
-                {/* Activity Details */}
-                <View style={styles.activitySection}>
-                    <Text style={styles.sectionTitle}>Activity Details</Text>
                     
-                    <View style={styles.detailRow}>
-                        <View style={styles.detailItem}>
-                            <Text style={styles.detailLabel}>Date</Text>
-                            <Text style={styles.detailValue}>{user?.todayDate || "N/A"}</Text>
+                    {!isAnonymous && (
+                        <View style={styles.actionButtons}>
+                            <TouchableOpacity 
+                                style={[styles.actionBtn, styles.callBtn]}
+                                onPress={() => handleCall(phone)}
+                            >
+                                <Image source={icons.call} style={styles.actionIcon} />
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.actionBtn, styles.messageBtn]}
+                                onPress={() => handleMessage(email)}
+                            >
+                                <Image source={icons.message} style={styles.actionIcon} />
+                            </TouchableOpacity>
                         </View>
-                        
-                        <View style={styles.detailItem}>
-                            <Text style={styles.detailLabel}>Time</Text>
-                            <Text style={styles.detailValue}>{user?.time || "N/A"}</Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.detailItem}>
-                        <Text style={styles.detailLabel}>First Activity</Text>
-                        <Text style={styles.detailValue}>{formatDate(user?.createdAt)}</Text>
-                    </View>
+                    )}
                 </View>
 
-                {/* Activity Counts */}
-                <View style={styles.activitySection}>
-                    <Text style={styles.sectionTitle}>Activity Summary</Text>
-                    <View style={styles.activityGrid}>
-                        <View style={styles.activityItem}>
-                            <Text style={styles.activityCount}>{user?.viewProfile || 0}</Text>
-                            <Text style={styles.activityLabel}>Profile Views</Text>
-                        </View>
-                        
-                        <View style={styles.activityItem}>
-                            <Text style={styles.activityCount}>{user?.call || 0}</Text>
-                            <Text style={styles.activityLabel}>Calls</Text>
-                        </View>
-                        
-                        <View style={styles.activityItem}>
-                            <Text style={styles.activityCount}>{user?.message || 0}</Text>
-                            <Text style={styles.activityLabel}>Messages</Text>
-                        </View>
-                        
-                        <View style={styles.activityItem}>
-                            <Text style={styles.activityCount}>{user?.map || 0}</Text>
-                            <Text style={styles.activityLabel}>Map Views</Text>
+                {/* Timeline Section */}
+                <View style={styles.timelineSection}>
+                    <View style={styles.timelineHeader}>
+                        <Image source={icons.clock} style={styles.timelineHeaderIcon} />
+                        <Text style={styles.timelineTitle}>Activity Time</Text>
+                    </View>
+                    
+                    <View style={styles.timelineContent}>
+                        <View style={styles.timelineItem}>
+                            <View style={[styles.timelineDot, { backgroundColor: currentActivity.color }]} />
+                            <View style={styles.timelineInfo}>
+                                <Text style={styles.timelineValue}>
+                                    {user?.todayDate || "N/A"} • {formatTime(user?.time)}
+                                </Text>
+                            </View>
                         </View>
                     </View>
                 </View>
-
-                {/* Main Activity Highlight */}
-                <LinearGradient
-                    colors={currentActivity.gradient}
-                    style={styles.mainActivity}
-                >
-                    <Image source={currentActivity.icon} style={styles.mainActivityIcon} />
-                    <View style={styles.mainActivityText}>
-                        <Text style={styles.mainActivityLabel}>
-                            {currentActivity.displayName}
-                        </Text>
-                        <Text style={styles.mainActivityCount}>
-                            {user?.[sourceType] || user?.viewProfile || 0} times
-                        </Text>
-                    </View>
-                </LinearGradient>
             </View>
         );
     };
 
-    if (loading) {
+    // Responsive Pagination Controls Component
+    const PaginationControls = () => (
+        <View style={styles.paginationContainer}>
+            {/* Previous Button */}
+            <TouchableOpacity
+                style={[
+                    styles.navButton,
+                    currentPage === 1 && styles.disabledButton
+                ]}
+                onPress={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+            >
+                <Text style={[
+                    styles.navButtonText,
+                    currentPage === 1 && styles.disabledButtonText
+                ]}>
+                    Prev
+                </Text>
+            </TouchableOpacity>
+
+            {/* Page Numbers - Center aligned with responsive sizing */}
+            <View style={styles.pageNumbersContainer}>
+                {getPageNumbers().map((page, index) => (
+                    <React.Fragment key={index}>
+                        {page === '...' ? (
+                            <View style={styles.ellipsisContainer}>
+                                <Text style={styles.ellipsis}>•••</Text>
+                            </View>
+                        ) : (
+                            <TouchableOpacity
+                                style={[
+                                    styles.pageNumber,
+                                    page === currentPage && styles.activePageNumber
+                                ]}
+                                onPress={() => handlePageChange(page)}
+                            >
+                                <Text style={[
+                                    styles.pageNumberText,
+                                    page === currentPage && styles.activePageNumberText
+                                ]}>
+                                    {page}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+                    </React.Fragment>
+                ))}
+            </View>
+
+            {/* Page Info for small screens */}
+            {/* {screenWidth < 400 && (
+                <View style={styles.pageInfoMobile}>
+                    <Text style={styles.pageInfoText}>
+                        {currentPage} / {totalPages}
+                    </Text>
+                </View>
+            )} */}
+
+            {/* Next Button */}
+            <TouchableOpacity
+                style={[
+                    styles.navButton,
+                    currentPage === totalPages && styles.disabledButton
+                ]}
+                onPress={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+            >
+                <Text style={[
+                    styles.navButtonText,
+                    currentPage === totalPages && styles.disabledButtonText
+                ]}>
+                    Next 
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    if (loading && currentPage === 1) {
         return (
-            <LinearGradient colors={['#34448B', '#1E2A78']} style={styles.gradientBg}>
-                <SafeAreaView style={styles.loaderContainer}>
-                    <ActivityIndicator size="large" color="#fff" />
-                    <Text style={styles.loadingText}>Loading User Details...</Text>
-                </SafeAreaView>
-            </LinearGradient>
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color={currentActivity.color} />
+                <Text style={styles.loadingText}>Loading Lead Details...</Text>
+            </View>
         );
     }
 
-    if (error) {
-        return (
-            <LinearGradient colors={['#34448B', '#1E2A78']} style={styles.gradientBg}>
-                <SafeAreaView style={styles.errorContainer}>
-                    <Text style={styles.errorIcon}>⚠️</Text>
-                    <Text style={styles.errorTitle}>Unable to Load Data</Text>
-                    <Text style={styles.errorMessage}>{error}</Text>
-                    <TouchableOpacity style={styles.retryButton} onPress={fetchLeadDetails}>
-                        <Text style={styles.retryButtonText}>Try Again</Text>
-                    </TouchableOpacity>
-                </SafeAreaView>
-            </LinearGradient>
-        );
-    }
+    // if (error && leadData.length === 0) {
+    //     return (
+    //         <View style={styles.errorContainer}>
+    //             <Image source={icons.map} style={styles.errorIcon} />
+    //             <Text style={styles.errorTitle}>Unable to Load Data</Text>
+    //             <Text style={styles.errorMessage}>{error}</Text>
+    //             <TouchableOpacity style={[styles.retryButton, { backgroundColor: currentActivity.color }]} onPress={() => fetchLeadDetails(1)}>
+    //                 <Text style={styles.retryButtonText}>Try Again</Text>
+    //             </TouchableOpacity>
+    //         </View>
+    //     );
+    // }
 
     return (
-        <LinearGradient colors={['#34448B', '#1E2A78']} style={styles.gradientBg}>
-            <StatusBar barStyle="light-content" backgroundColor="#34448B" />
-            <SafeAreaView style={styles.safeArea}>
-                {/* Header */}
-                <View style={styles.header}>
+        <SafeAreaView style={styles.safeArea}>
+            <StatusBar barStyle="light-content" backgroundColor={currentActivity.gradient[0]} />
+            
+            {/* Header */}
+            <LinearGradient
+                colors={currentActivity.gradient}
+                style={styles.header}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+            >
+                <View style={styles.headerContent}>
                     <TouchableOpacity 
                         style={styles.backButton}
                         onPress={() => navigation.goBack()}
@@ -297,63 +403,81 @@ const LeadDetailsScreen = () => {
                         <Text style={styles.headerTitle}>
                             {sourceName || currentActivity.displayName}
                         </Text>
+                        {/* <Text style={styles.headerSubtitle}>
+                            {businessName} • {totalLeads} Users • Page {currentPage} of {totalPages}
+                        </Text> */}
                         <Text style={styles.headerSubtitle}>
-                            {leadData?.totalLeads || 0} Users Found
+                            {businessName} • Page {currentPage} of {totalPages}
                         </Text>
                     </View>
                     
-                    <View style={styles.headerPlaceholder} />
+                    {/* <TouchableOpacity 
+                        style={styles.refreshButton}
+                        onPress={onRefresh}
+                    >
+                        <Image source={icons.refresh} style={styles.refreshIcon} />
+                    </TouchableOpacity> */}
                 </View>
+            </LinearGradient>
 
-                {/* User List */}
-                <View style={styles.listContainer}>
-                    {leadData?.data?.length > 0 ? (
+            {/* Content */}
+            <View style={styles.content}>
+                {leadData.length > 0 ? (
+                    <>
                         <FlatList
-                            data={leadData.data}
-                            keyExtractor={(item, index) => item?._id || index.toString()}
+                            data={leadData}
+                            keyExtractor={(item, index) => `${item?._id || index}_${index}`}
                             renderItem={renderLeadItem}
                             refreshControl={
                                 <RefreshControl 
                                     refreshing={refreshing} 
-                                    onRefresh={() => fetchLeadDetails(true)}
-                                    colors={['#fff']}
-                                    tintColor="#fff"
+                                    onRefresh={onRefresh}
+                                    colors={[currentActivity.color]}
+                                    tintColor={currentActivity.color}
                                 />
                             }
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={styles.listContent}
                         />
-                    ) : (
-                        <View style={styles.emptyState}>
-                            <Text style={styles.emptyStateIcon}>👥</Text>
-                            <Text style={styles.emptyStateTitle}>No Users Found</Text>
-                            <Text style={styles.emptyStateMessage}>
-                                No users found for {currentActivity.displayName.toLowerCase()}.
-                            </Text>
-                        </View>
-                    )}
-                </View>
-            </SafeAreaView>
-        </LinearGradient>
+                        
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && <PaginationControls />}
+                    </>
+                ) : (
+                    <View style={styles.emptyState}>
+                        {/* <Image source={icons.profile} style={styles.emptyStateIcon} /> */}
+                        <Text style={styles.emptyStateTitle}>No Leads Found</Text>
+                        <Text style={styles.emptyStateMessage}>
+                            No Leadss found for {currentActivity.displayName.toLowerCase()}.
+                        </Text>
+                        {/* <TouchableOpacity 
+                            style={[styles.emptyStateButton, { backgroundColor: currentActivity.color }]}
+                            onPress={onRefresh}
+                        >
+                            <Text style={styles.emptyStateButtonText}>Refresh</Text>
+                        </TouchableOpacity> */}
+                    </View>
+                )}
+            </View>
+        </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
-    gradientBg: {
-        flex: 1,
-    },
     safeArea: {
         flex: 1,
+        backgroundColor: '#F8F9FA',
     },
     loaderContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#F8F9FA',
     },
     loadingText: {
-        color: '#fff',
+        marginTop: 16,
         fontSize: 16,
-        marginTop: 12,
+        color: '#666',
         fontWeight: '500',
     },
     errorContainer: {
@@ -361,27 +485,29 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 24,
+        backgroundColor: '#F8F9FA',
     },
     errorIcon: {
-        fontSize: 48,
+        width: 64,
+        height: 64,
         marginBottom: 16,
+        tintColor: '#FF6B6B',
     },
     errorTitle: {
-        color: '#fff',
         fontSize: 20,
         fontWeight: '600',
+        color: '#2C3E50',
+        marginTop: 16,
         marginBottom: 8,
-        textAlign: 'center',
     },
     errorMessage: {
-        color: 'rgba(255,255,255,0.8)',
         fontSize: 14,
+        color: '#7F8C8D',
         textAlign: 'center',
         marginBottom: 24,
         lineHeight: 20,
     },
     retryButton: {
-        backgroundColor: '#fff',
         paddingHorizontal: 32,
         paddingVertical: 12,
         borderRadius: 25,
@@ -392,17 +518,24 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
     retryButtonText: {
-        color: '#34448B',
+        color: '#fff',
         fontSize: 16,
         fontWeight: '600',
     },
     header: {
+        paddingTop: 16,
+        paddingBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    headerContent: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        paddingHorizontal: 16,
     },
     backButton: {
         padding: 8,
@@ -415,174 +548,196 @@ const styles = StyleSheet.create({
     headerCenter: {
         flex: 1,
         alignItems: 'center',
+        marginHorizontal: 8,
     },
     headerTitle: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: screenWidth < 400 ? 18 : 20,
         fontWeight: '700',
+        textAlign: 'center',
     },
     headerSubtitle: {
-        color: 'rgba(255,255,255,0.8)',
-        fontSize: 12,
-        marginTop: 2,
+        color: 'rgba(255,255,255,0.9)',
+        fontSize: screenWidth < 400 ? 12 : 14,
+        marginTop: 4,
+        textAlign: 'center',
     },
-    headerPlaceholder: {
-        width: 40,
+    refreshButton: {
+        padding: 8,
     },
-    listContainer: {
+    refreshIcon: {
+        width: 24,
+        height: 24,
+        tintColor: '#fff',
+    },
+    content: {
         flex: 1,
-        paddingHorizontal: 16,
+        backgroundColor: '#F8F9FA',
     },
     listContent: {
-        paddingBottom: 20,
+        padding: 16,
+        paddingBottom: 8,
     },
     card: {
-        borderRadius: 20,
-        padding: 20,
-        marginBottom: 16,
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 12,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
         shadowRadius: 8,
         elevation: 4,
-    },
-    cardEven: {
-        backgroundColor: 'rgba(255,255,255,0.95)',
-    },
-    cardOdd: {
-        backgroundColor: 'rgba(255,255,255,0.98)',
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
     },
     userHeader: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        marginBottom: 20,
+        marginBottom: 16,
     },
-    userAvatar: {
+    avatarContainer: {
+        position: 'relative',
+        marginRight: 12,
+    },
+    avatar: {
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: '#E8EEFF',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
+        borderWidth: 2,
+        borderColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
     avatarIcon: {
-        width: 24,
-        height: 24,
-        tintColor: '#34448B',
+        width: 20,
+        height: 20,
+        tintColor: '#4A90E2',
+    },
+    onlineIndicator: {
+        position: 'absolute',
+        bottom: 2,
+        right: 2,
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: '#34C759',
+        borderWidth: 2,
+        borderColor: '#fff',
     },
     userInfo: {
         flex: 1,
+        marginRight: 8,
     },
-    userPhone: {
-        fontSize: 18,
+    userName: {
+        fontSize: 16,
         fontWeight: '700',
-        color: '#1A1A1A',
+        color: '#2C3E50',
         marginBottom: 4,
     },
     userEmail: {
-        fontSize: 14,
-        color: '#666',
+        fontSize: 13,
+        color: '#7F8C8D',
         fontWeight: '500',
-        marginBottom: 12,
+        marginBottom: 8,
+    },
+    activityBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 10,
+        alignSelf: 'flex-start',
+    },
+    activityBadgeIcon: {
+        width: 12,
+        height: 12,
+        tintColor: '#fff',
+    },
+    activityBadgeText: {
+        color: '#fff',
+        fontSize: 11,
+        fontWeight: '600',
+        marginLeft: 4,
     },
     actionButtons: {
         flexDirection: 'row',
-        gap: 12,
+        gap: 6,
     },
-    actionButton: {
-        flexDirection: 'row',
+    actionBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#34448B',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    callBtn: {
+        backgroundColor: '#34C759',
+    },
+    messageBtn: {
+        backgroundColor: '#FF9500',
     },
     actionIcon: {
         width: 14,
         height: 14,
         tintColor: '#fff',
-        marginRight: 6,
     },
-    actionText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: '600',
+    timelineSection: {
+        marginBottom: 0,
     },
-    activitySection: {
-        marginBottom: 20,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#34448B',
-        marginBottom: 12,
-    },
-    detailRow: {
+    timelineHeader: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 12,
+        alignItems: 'center',
+        marginBottom: 8,
     },
-    detailItem: {
-        flex: 1,
+    timelineHeaderIcon: {
+        width: 16,
+        height: 16,
+        tintColor: '#666',
     },
-    detailLabel: {
-        fontSize: 12,
-        color: '#888',
-        fontWeight: '500',
-        marginBottom: 4,
-    },
-    detailValue: {
+    timelineTitle: {
         fontSize: 14,
-        color: '#333',
         fontWeight: '600',
+        color: '#2C3E50',
+        marginLeft: 6,
     },
-    activityGrid: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+    timelineContent: {
+        paddingLeft: 10,
     },
-    activityItem: {
-        alignItems: 'center',
-        flex: 1,
-    },
-    activityCount: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#34448B',
-        marginBottom: 2,
-    },
-    activityLabel: {
-        fontSize: 11,
-        color: '#666',
-        fontWeight: '500',
-        textAlign: 'center',
-    },
-    mainActivity: {
+    timelineItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
-        borderRadius: 12,
-        marginTop: 8,
     },
-    mainActivityIcon: {
-        width: 24,
-        height: 24,
-        tintColor: '#fff',
+    timelineDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
         marginRight: 12,
+        borderWidth: 2,
+        borderColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 1,
     },
-    mainActivityText: {
+    timelineInfo: {
         flex: 1,
     },
-    mainActivityLabel: {
-        color: '#fff',
-        fontSize: 14,
+    timelineValue: {
+        fontSize: 13,
+        color: '#2C3E50',
         fontWeight: '600',
-        marginBottom: 2,
-    },
-    mainActivityCount: {
-        color: 'rgba(255,255,255,0.9)',
-        fontSize: 16,
-        fontWeight: '700',
     },
     emptyState: {
         flex: 1,
@@ -591,22 +746,126 @@ const styles = StyleSheet.create({
         paddingVertical: 60,
     },
     emptyStateIcon: {
-        fontSize: 64,
+        width: 70,
+        height: 70,
+        tintColor: '#CCD1D1',
         marginBottom: 16,
     },
     emptyStateTitle: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#fff',
+        color: '#2C3E50',
         marginBottom: 8,
+        textAlign: 'center',
     },
     emptyStateMessage: {
-        fontSize: 14,
-        color: 'rgba(255,255,255,0.8)',
+        fontSize: 13,
+        color: '#7F8C8D',
         textAlign: 'center',
-        lineHeight: 20,
+        marginBottom: 24,
+        lineHeight: 18,
+        paddingHorizontal: 20,
+    },
+    emptyStateButton: {
+        paddingHorizontal: 28,
+        paddingVertical: 10,
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    emptyStateButtonText: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    // Responsive Pagination Styles
+    paginationContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+        backgroundColor: '#fff',
+        borderTopWidth: 1,
+        borderTopColor: '#F0F0F0',
+        minHeight: 60,
+    },
+    navButton: {
+        backgroundColor: '#155DFC',
+        paddingHorizontal: screenWidth < 400 ? 12 : 16,
+        paddingVertical: 8,
+        borderRadius: 6,
+        minWidth: screenWidth < 400 ? 60 : 70,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    disabledButton: {
+        backgroundColor: '#E0E0E0',
+    },
+    navButtonText: {
+        color: '#fff',
+        fontSize: screenWidth < 400 ? 12 : 14,
+        fontWeight: '600',
+    },
+    disabledButtonText: {
+        color: '#9E9E9E',
+    },
+    pageNumbersContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+        marginHorizontal: 8,
+        flexWrap: 'wrap',
+    },
+    pageNumber: {
+        width: screenWidth < 400 ? 32 : 36,
+        height: screenWidth < 400 ? 32 : 36,
+        borderRadius: 6,
+        backgroundColor: '#F8F9FA',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        marginHorizontal: 2,
+    },
+    activePageNumber: {
+        backgroundColor: '#155DFC',
+        borderColor: '#155DFC',
+    },
+    pageNumberText: {
+        fontSize: screenWidth < 400 ? 12 : 14,
+        fontWeight: '600',
+        color: '#666',
+    },
+    activePageNumberText: {
+        color: '#fff',
+    },
+    ellipsisContainer: {
+        width: screenWidth < 400 ? 24 : 28,
+        height: screenWidth < 400 ? 32 : 36,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 2,
+    },
+    ellipsis: {
+        fontSize: screenWidth < 400 ? 12 : 14,
+        fontWeight: '600',
+        color: '#666',
+    },
+    pageInfoMobile: {
+        position: 'absolute',
+        bottom: 4,
+        alignSelf: 'center',
+    },
+    pageInfoText: {
+        fontSize: 11,
+        color: '#666',
+        fontWeight: '500',
     },
 });
 
 export default LeadDetailsScreen;
-

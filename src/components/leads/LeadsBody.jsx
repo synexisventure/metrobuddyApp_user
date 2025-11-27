@@ -6,7 +6,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 
-const LeadsBody = ({ leads, loading, businessId }) => {
+const LeadsBody = ({ leads, loading, businessId , businessName}) => {
   const navigation = useNavigation();
 
   // -----------------------------
@@ -42,18 +42,18 @@ const LeadsBody = ({ leads, loading, businessId }) => {
       name: "Messages",
       leads: totalMessages,
       percentage: totalAll ? ((totalMessages / totalAll) * 100).toFixed(1) : 0,
-      icon: require('../../assets/images/share.png'),
+      icon: require('../../assets/images/mail.png'),
       type: "message"
     },
     {
       name: "Calls",
       leads: totalCalls,
       percentage: totalAll ? ((totalCalls / totalAll) * 100).toFixed(1) : 0,
-      icon: require('../../assets/images/bell.png'),
+      icon: require('../../assets/images/phone.png'),
       type: "call"
     },
     {
-      name: "Map Views",
+      name: "Direction Views",
       leads: totalMaps,
       percentage: totalAll ? ((totalMaps / totalAll) * 100).toFixed(1) : 0,
       icon: require('../../assets/images/location.png'),
@@ -68,6 +68,7 @@ const LeadsBody = ({ leads, loading, businessId }) => {
     navigation.navigate('LeadsDetailsScreen', {
       sourceType,
       businessId,
+      businessName,
     });
   };
 
@@ -89,7 +90,7 @@ const LeadsBody = ({ leads, loading, businessId }) => {
 
           {/* Header Section */}
           <View style={styles.header}>
-            <Text style={styles.title}>Lead Sources</Text>
+            {/* <Text style={styles.title}>Lead Sources </Text> */}
           </View>
 
           {/* Dynamic Lead Cards */}

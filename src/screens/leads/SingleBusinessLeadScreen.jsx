@@ -31,7 +31,7 @@ const SingleBusinessLeadScreen = ({ route }) => {
         
         <LeadsPieChart leads={businessLeads} loading={businessLeadsLoading} /> 
 
-        <LeadsBody leads={businessLeads} loading={businessLeadsLoading} businessId={businessId} />
+        <LeadsBody leads={businessLeads} loading={businessLeadsLoading} businessId={businessId} businessName = {business.businessName}/>
 
       </ScrollView>
     </SafeAreaView> 

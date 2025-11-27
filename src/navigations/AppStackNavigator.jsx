@@ -32,8 +32,7 @@ import SearchScreen from "../screens/search/SearchScreen";
 import CategorySearchScreen from "../screens/categorySearch/CategorySearchScreeen";
 
 // leads 
-import SingleBusinessLeadScreen from "../screens/leads/SingleBusinessLeadScreen";
-import LeadsScreen from '../screens/leads/LeadsScreen'; 
+import SingleBusinessLeadScreen from "../screens/leads/SingleBusinessLeadScreen"; 
 import LeadsDetailsScreen from '../screens/leads/LeadsDetailsScreen';
 
 // raise ticket
@@ -75,8 +74,7 @@ const AppStackNavigator = () => {
             {/*  category search screen */}
             <Stack.Screen name="CategorySearchScreen" component={CategorySearchScreen} />
 
-            {/* leads screen */}
-            <Stack.Screen name="LeadsScreen" component={LeadsScreen} />
+            {/* leads screen */} 
             <Stack.Screen name="SingleLeadScreen" component={SingleBusinessLeadScreen} />
             <Stack.Screen name="LeadsDetailsScreen" component={LeadsDetailsScreen} />
 

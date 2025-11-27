@@ -5,44 +5,31 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppContext } from '../../context/AppContext';
 
 const BecomePartnerCard = ({ data = {} }) => {
+
     const navigation = useNavigation();
     const { IMAGE_BASE_URL } = useContext(AppContext);
 
-    useEffect(() => {
-        console.log("Card Data : ", data);
-        console.log(`${IMAGE_BASE_URL}/uploads/businessImages/${data.logo}`);
-    }, [data]);
-
-    const logoUrl = data?.logo 
+    const logoUrl = data?.logo
         ? `${IMAGE_BASE_URL}/uploads/businessImages/${data.logo}`
         : null;
 
+    useEffect(() => {
+        console.log("Card Data : ", data);
+    }, [data]);
+
     return (
-        <TouchableOpacity style={styles.container}
-            onPress={async () => {
-                const bizId = data?.businessId;
-                console.log("navigation to dashboard : " , data?.businessId );
-                
-                if (bizId) {
-                    await AsyncStorage.setItem("businessId", bizId);
-                }
-                navigation.navigate("DashboardScreen",{
-                    businessId : bizId,
-                });
-            }}
-            activeOpacity={0.9}>
-            
-            {/* Main Content with Logo */}
+        <View style={styles.container}>
+
+            {/* MAIN CONTENT */}
             <View style={styles.content}>
-                {/* Logo + Title Row */}
+
+                {/* Header Row */}
                 <View style={styles.headerRow}>
-                    {/* Logo with Border */}
+
+                    {/* Logo */}
                     {logoUrl ? (
                         <View style={styles.logoContainer}>
-                            <Image
-                                source={{ uri: logoUrl }}
-                                style={styles.logo}
-                            />
+                            <Image source={{ uri: logoUrl }} style={styles.logo} />
                         </View>
                     ) : (
                         <View style={[styles.logoContainer, styles.placeholderLogo]}>
@@ -51,7 +38,7 @@ const BecomePartnerCard = ({ data = {} }) => {
                             </Text>
                         </View>
                     )}
-                    
+
                     {/* Title + Rating */}
                     <View style={styles.titleContainer}>
                         <View style={styles.titleRow}>
@@ -70,23 +57,23 @@ const BecomePartnerCard = ({ data = {} }) => {
                             </View>
                         </View>
 
-                        {/* Category */}
                         <Text style={styles.category}>
-                            {data?.category || 'NA'}
+                            {data?.description ? data.description.substring(0, 20) + "..." : 'NA'}
                         </Text>
+
                     </View>
+
                 </View>
 
-                {/* Divider Line */}
                 <View style={styles.divider} />
 
-                {/* Location and Hours Row */}
+                {/* Address + Hours */}
                 <View style={styles.bottomRow}>
                     <View style={styles.infoItem}>
                         <Image
                             source={require('../../assets/images/location.png')}
                             style={styles.icon}
-                        /> 
+                        />
                         <Text style={styles.address} numberOfLines={1}>
                             {data?.address
                                 ? `${data?.address?.plotNo || ''} ${data?.address?.street || ''}, ${data?.address?.city || ''}`
@@ -94,22 +81,59 @@ const BecomePartnerCard = ({ data = {} }) => {
                         </Text>
                     </View>
 
-                    <View style={styles.infoItem}>
+                    {/* <View style={styles.infoItem}>
                         <Image
                             source={require('../../assets/images/clock.png')}
                             style={styles.icon}
                         />
-                        <Text style={styles.hours}>
-                            {data?.hours || 'NA'}
-                        </Text>
-                    </View>
+                        <Text style={styles.hours}>{data?.hours || 'NA'}</Text>
+                    </View> */}
                 </View>
+
+                {/* ---------------- ACTION BUTTONS ---------------- */}
+                <View style={styles.buttonRow}>
+
+                    {/* Dashboard Button */}
+                    <TouchableOpacity
+                        style={styles.dashboardBtn}
+                        onPress={async () => {
+                            const bizId = data?.businessId;
+                            if (bizId) await AsyncStorage.setItem("businessId", bizId);
+
+                            navigation.navigate("DashboardScreen", {
+                                businessId: bizId
+                            });
+                        }}
+                    >
+                        <Text style={styles.dashboardBtnText}>View Dashboard</Text>
+                    </TouchableOpacity>
+
+                    {/* Leads Button */}
+                    <TouchableOpacity
+                        style={styles.leadsBtn}
+                        onPress={() => {
+                            navigation.navigate("SingleLeadScreen", {
+                                businessId: data?.businessId,
+                                business: data
+                            });
+                        }}
+                    >
+                        <Text style={styles.leadsBtnText}>View Leads</Text>
+                    </TouchableOpacity>
+
+                </View>
+
             </View>
-        </TouchableOpacity>
+
+        </View>
     );
 };
 
 export default BecomePartnerCard;
+
+
+
+/* ---------------------- STYLES ---------------------- */
 
 const styles = StyleSheet.create({
     container: {
@@ -120,14 +144,17 @@ const styles = StyleSheet.create({
         borderColor: '#f0f0f0',
         marginBottom: 12,
     },
+
     content: {
         marginBottom: 0,
     },
+
     headerRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
         marginBottom: 12,
     },
+
     logoContainer: {
         width: 50,
         height: 50,
@@ -154,15 +181,17 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
     },
+
     titleContainer: {
         flex: 1,
     },
+
     titleRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
         marginBottom: 4,
     },
+
     hotelName: {
         fontSize: 16,
         fontWeight: '700',
@@ -170,6 +199,7 @@ const styles = StyleSheet.create({
         flex: 1,
         marginRight: 8,
     },
+
     ratingContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -179,12 +209,10 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         borderWidth: 1,
         borderColor: '#ffeeba',
-        flexShrink: 0,
     },
     starIcon: {
         width: 12,
         height: 12,
-        resizeMode: 'contain',
     },
     rating: {
         fontSize: 11,
@@ -192,6 +220,7 @@ const styles = StyleSheet.create({
         color: '#e6a700',
         marginLeft: 4,
     },
+
     category: {
         fontSize: 13,
         color: '#666',
@@ -204,37 +233,73 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#e1f0ff',
     },
+
     divider: {
         height: 1,
         backgroundColor: '#f0f0f0',
         marginBottom: 12,
     },
+
     bottomRow: {
         flexDirection: 'row',
-        alignItems: 'center',
         justifyContent: 'space-between',
     },
+
     infoItem: {
         flexDirection: 'row',
         alignItems: 'center',
         flex: 1,
     },
+    icon: {
+        width: 14,
+        height: 14,
+    },
+
     address: {
         fontSize: 12,
         color: '#666',
         flex: 1,
         marginLeft: 6,
-        fontWeight: '400',
     },
+
     hours: {
         fontSize: 12,
         color: '#666',
         marginLeft: 6,
-        fontWeight: '500',
     },
-    icon: {
-        width: 14,
-        height: 14,
-        resizeMode: 'contain',
+
+    /* -------- BUTTONS -------- */
+
+    buttonRow: {
+        flexDirection: 'row',
+        marginTop: 16,
+    },
+
+    dashboardBtn: {
+        flex: 1,
+        backgroundColor: '#007bff',
+        paddingVertical: 10,
+        borderRadius: 8,
+        marginRight: 8,
+        alignItems: 'center',
+    },
+    dashboardBtnText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+
+    leadsBtn: {
+        flex: 1,
+        backgroundColor: '#28a745',
+        paddingVertical: 10,
+        borderRadius: 8,
+        marginLeft: 8,
+        alignItems: 'center',
+    },
+    leadsBtnText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
     },
 });

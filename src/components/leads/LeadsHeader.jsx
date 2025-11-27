@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const LeadsHeader = () => {
+const LeadsHeader = ({businessName}) => {
   const navigation = useNavigation();
 
   return (
@@ -18,7 +18,7 @@ const LeadsHeader = () => {
       {/* Text content */}
       <View style={styles.textContainer}>
         <Text style={styles.title}>Lead Dashboard</Text>
-        <Text style={styles.subtitle}>Track your business performance</Text>
+        <Text style={styles.subtitle}>{businessName || ""}</Text> 
       </View>
     </View>
   );
@@ -55,5 +55,6 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     fontSize: 14,
     marginTop: 2,
+    flexWrap : "wrap"
   },
 });

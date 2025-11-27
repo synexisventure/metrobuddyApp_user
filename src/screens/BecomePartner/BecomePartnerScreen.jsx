@@ -79,7 +79,7 @@ const BecomePartnerScreen = () => {
         return total + (business.leadCount || 0);
     }, 0);
 
-    if (isBusinessListLoading) {
+    if (isBusinessListLoading && !businessList) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#155DFC" />
@@ -117,18 +117,16 @@ const BecomePartnerScreen = () => {
                 </View>
 
                 {/* Quick Actions - Only show when businesses exist */}
-                {businessList.length > 0 && (
+                {/* {businessList.length > 0 && (
                     <View style={styles.actionsContainer}>
                         <Text style={styles.sectionTitle}>Quick Actions</Text>
-
-                        {/* All Leads Action Card */}
+ 
                         <TouchableOpacity
                             style={styles.leadsActionCard}
                             onPress={() => { navigation.navigate("LeadsScreen") }}
                             activeOpacity={0.8}
                         >
-                            <View style={styles.leadsCardContent}>
-                                {/* Left Side - Icon and Text */}
+                            <View style={styles.leadsCardContent}> 
                                 <View style={styles.leadsLeftContent}>
                                     <View style={styles.leadsIconContainer}>
                                         <Image
@@ -142,9 +140,7 @@ const BecomePartnerScreen = () => {
                                             View and manage all your business leads
                                         </Text>
                                     </View>
-                                </View>
-
-                                {/* Right Side - Count and Arrow */}
+                                </View> 
                                 <View style={styles.leadsRightContent}>
                                     {totalLeadsCount > 0 && (
                                         <View style={styles.leadsCountBadge}>
@@ -153,18 +149,14 @@ const BecomePartnerScreen = () => {
                                             </Text>
                                         </View>
                                     )}
-                                    <View style={styles.arrowContainer}>
-                                        {/* <Image
-                                            source={require('../../assets/images/arrow_right.png')}
-                                            style={styles.arrowIcon}
-                                        /> */}
+                                    <View style={styles.arrowContainer}> 
                                         <Text> {">"}</Text>
                                     </View>
                                 </View>
                             </View>
                         </TouchableOpacity>
                     </View>
-                )}
+                )} */}
 
                 {/* Your Businesses Section */}
                 <View style={styles.businessesSection}>
