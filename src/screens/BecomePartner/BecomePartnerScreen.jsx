@@ -22,6 +22,7 @@ const BecomePartnerScreen = () => {
     const navigation = useNavigation()
 
     const { API_BASE_URL,
+
         setBusinessDetails,
         setContactDetails,
         setBusinessTiming,
@@ -29,17 +30,21 @@ const BecomePartnerScreen = () => {
         setBusinessProducts,
         setBusinessMedia,
         setBusinessDocuments,
+
+        businessList,
+        isBusinessListLoading,
+        getMyBusinessList,
+
+
     } = useContext(AppContext);
 
-    const [businessList, setBusinessList] = useState([]);
-    const [loading, setLoading] = useState(false);
     const [userPhone, setUserPhone] = useState('');
 
     useFocusEffect(
         useCallback(() => {
             const loadData = async () => {
                 await fetchUserPhone();
-                await fetchAllBusinesses();
+                await getMyBusinessList();
             };
             loadData();
         }, [])
@@ -49,39 +54,24 @@ const BecomePartnerScreen = () => {
         try {
             const phone = await AsyncStorage.getItem("userPhone");
             setUserPhone(phone || 'Not Available');
-        } catch (error) {
+        } catch (error) {   
             console.error("Error fetching phone:", error);
         }
     };
 
-    const fetchAllBusinesses = async () => {
-        try {
-            setLoading(true);
-            const token = await AsyncStorage.getItem("token");
-            const response = await axios.get(`${API_BASE_URL}/user/partner_forms/all_business`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            console.log("your all business : ", response.data.data);
-
-            setBusinessList(response.data.data || []);
-
-        } catch (error) {
-            console.error("Failed to fetch businesses:", error.response);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleBusinessPress = async (business) => {
-        const bizId = business?.businessId?._id;
-        if (bizId) {
-            await AsyncStorage.setItem("businessId", bizId);
-            navigation.navigate("DashboardScreen", {
-                businessId: bizId,
-                businessName: business.businessName
-            });
-        }
+        // this naviagtion done from its child card
+        
+        // const bizId = business?.businessId._id; 
+        // console.log("navigation to dashboard......");
+        
+        // if (bizId) {
+        //     await AsyncStorage.setItem("businessId", bizId);
+        //     navigation.navigate("DashboardScreen", {
+        //         businessId: bizId,
+        //         businessName: business.businessName
+        //     });
+        // }
     };
 
     // Calculate total leads count
@@ -89,7 +79,7 @@ const BecomePartnerScreen = () => {
         return total + (business.leadCount || 0);
     }, 0);
 
-    if (loading) {
+    if (isBusinessListLoading) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#155DFC" />

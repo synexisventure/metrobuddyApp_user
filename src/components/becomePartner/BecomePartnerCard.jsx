@@ -20,11 +20,15 @@ const BecomePartnerCard = ({ data = {} }) => {
     return (
         <TouchableOpacity style={styles.container}
             onPress={async () => {
-                const bizId = data?.businessId?._id;
+                const bizId = data?.businessId;
+                console.log("navigation to dashboard : " , data?.businessId );
+                
                 if (bizId) {
                     await AsyncStorage.setItem("businessId", bizId);
                 }
-                navigation.navigate("DashboardScreen");
+                navigation.navigate("DashboardScreen",{
+                    businessId : bizId,
+                });
             }}
             activeOpacity={0.9}>
             

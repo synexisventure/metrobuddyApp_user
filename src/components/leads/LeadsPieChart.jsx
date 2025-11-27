@@ -1,53 +1,81 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 
-const LeadsPieChart = () => {
+const LeadsPieChart = ({ leads, loading }) => {
+
+  if (loading) {
+    return (
+      <View style={{ backgroundColor: "#34448B" }}>
+        <View style={styles.card}>
+          <Text style={styles.title}>Last 10 days leads Overview</Text>
+          <View style={[styles.chartContainer, { justifyContent: 'center' }]}>
+            <ActivityIndicator size="large" color="#fff" />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  const totalViews = leads.reduce((acc, item) => acc + item.viewProfile, 0);
+  const totalMessages = leads.reduce((acc, item) => acc + item.message, 0);
+  const totalCalls = leads.reduce((acc, item) => acc + item.call, 0);
+  const totalMaps = leads.reduce((acc, item) => acc + item.map, 0);
+
+  const totalAll = totalViews + totalMessages + totalCalls + totalMaps;
+
   const pieData = [
     {
-      value: 47,
+      value: totalViews,
       color: '#009FFF',
       gradientCenterColor: '#006DFF',
       focused: true,
+      label: 'Views',
+      count: totalViews,
     },
-    { value: 40, color: '#93FCF8', gradientCenterColor: '#3BE9DE' },
-    { value: 16, color: '#BDB2FA', gradientCenterColor: '#8F80F3' },
-    // { value: 3, color: '#FFA5BA', gradientCenterColor: '#FF7F97' },
+    {
+      value: totalMessages,
+      color: '#93FCF8',
+      gradientCenterColor: '#3BE9DE',
+      label: 'Messages',
+      count: totalMessages,
+    },
+    {
+      value: totalCalls,
+      color: '#BDB2FA',
+      gradientCenterColor: '#8F80F3',
+      label: 'Calls',
+      count: totalCalls,
+    },
+    {
+      value: totalMaps,
+      color: '#FFA07A',
+      gradientCenterColor: '#FF7F50',
+      label: 'Maps',
+      count: totalMaps,
+    }
   ];
 
-  const renderDot = color => (
-    <View style={[styles.dot, { backgroundColor: color }]} />
-  );
-
-  const renderLegendComponent = () => (
-    <>
-      <View style={styles.legendRow}>
-        <View style={styles.legendItem}>
-          {renderDot('#006DFF')}
-          <Text style={styles.legendText}>Search : 47%</Text>
-        </View>
-        <View style={styles.legendItem}>
-          {renderDot('#8F80F3')}
-          <Text style={styles.legendText}>Trendings : 16%</Text>
-        </View>
+  const renderLegend = () => (
+    <View style={{ backgroundColor: "#34448B" }}>
+      <View style={styles.legendContainer}>
+        {pieData.map((item, index) => (
+          <View key={index} style={styles.legendItem}>
+            <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+            <Text style={styles.legendText}>
+              {item.label}: {item.count}
+            </Text>
+          </View>
+        ))}
       </View>
-      <View style={styles.legendRow}>
-        <View style={styles.legendItem}>
-          {renderDot('#3BE9DE')}
-          <Text style={styles.legendText}>Social Media Share: 40%</Text>
-        </View>
-        {/* <View style={styles.legendItem}>
-          {renderDot('#FF7F97')}
-          <Text style={styles.legendText}>Poor: 3%</Text>
-        </View> */}
-      </View>
-    </>
+    </View>
   );
 
   return (
-    <View style={styles.screen}>
+    <View style={{ backgroundColor: "#34448B" }}>
       <View style={styles.card}>
-        <Text style={styles.title}>Lead Source Overview </Text>
+        <Text style={styles.title}>Last 10 days leads Overview</Text>
+
         <View style={styles.chartContainer}>
           <PieChart
             data={pieData}
@@ -59,13 +87,22 @@ const LeadsPieChart = () => {
             innerCircleColor={'#232B5D'}
             centerLabelComponent={() => (
               <View style={styles.centerLabel}>
-                <Text style={styles.centerValue}>47%</Text>
-                <Text style={styles.centerText}>Search</Text>
+                <Text style={styles.centerValue}>{totalAll}</Text>
+                <Text style={styles.centerText}>Total Leads</Text>
               </View>
             )}
+            // Show values on pie chart segments
+            showText
+            textColor="white"
+            textSize={12}
+            fontWeight="bold"
+            // Custom text for segments
+            textBackgroundRadius={15}
           />
         </View>
-        {renderLegendComponent()}
+
+        {/* Legend below the chart */}
+        {renderLegend()}
       </View>
     </View>
   );
@@ -74,11 +111,6 @@ const LeadsPieChart = () => {
 export default LeadsPieChart;
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    // paddingVertical: 60,
-    backgroundColor: '#34448B',
-  },
   card: {
     margin: 10,
     padding: 16,
@@ -86,13 +118,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#232B5D',
   },
   title: {
-    color: 'white',
+    color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    marginBottom: 10,
   },
   chartContainer: {
     padding: 20,
     alignItems: 'center',
+    minHeight: 230,
   },
   centerLabel: {
     justifyContent: 'center',
@@ -104,27 +138,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   centerText: {
-    fontSize: 14,
-    color: 'white',
+    color: '#fff',
+    fontSize: 12,
   },
-  legendRow: {
+  legendContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 10,
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingHorizontal: 10,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    // width: 160,
-    marginRight: 20,
+    width: '48%',
+    marginBottom: 8,
+  },
+  legendColor: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 8,
   },
   legendText: {
-    color: 'white',
-  },
-  dot: {
-    height: 10,
-    width: 10,
-    borderRadius: 5,
-    marginRight: 10,
+    color: '#fff',
+    fontSize: 12,
+    flex: 1,
   },
 });

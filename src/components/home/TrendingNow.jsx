@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import React, { useContext, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useContext, useEffect } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { AppContext } from '../../context/AppContext'; // adjust path
 // Local icons
 const STAR_ICON = require('../../assets/images/star.png');
@@ -9,7 +9,7 @@ const ARROW_ICON = require('../../assets/images/forward_icon.png');
 
 const TrendingItem = ({ item }) => {
 
-  const {IMAGE_BASE_URL} = useContext(AppContext);
+  const { IMAGE_BASE_URL } = useContext(AppContext);
 
   const navigation = useNavigation();
   const business = item.businessDetails;
@@ -24,8 +24,8 @@ const TrendingItem = ({ item }) => {
     <TouchableOpacity
       style={styles.itemContainer}
       onPress={() => {
-        console.log("sending details:", business.businessId );
-        navigation.navigate('BusinessSingleScreen', { key : business.businessId });
+        console.log("sending details:", business.businessId);
+        navigation.navigate('BusinessSingleScreen', { key: business.businessId });
       }}
     >
       {/* Left side: Image */}
@@ -72,9 +72,19 @@ const TrendingNow = () => {
   const navigation = useNavigation();
   const { trendingBusinesses, trendingLoading, fetchTrendingBusinesses } = useContext(AppContext);
 
-  useEffect(() => {
-    fetchTrendingBusinesses();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (trendingBusinesses.length === 0) {
+        fetchTrendingBusinesses();
+      }
+
+      // agar cleanup chahiye to yahan return kar sakte ho
+      return () => {
+        console.log("Screen unfocused");
+      };
+    }, [])
+  );
+
 
   const handlePressViewAll = () => {
     navigation.navigate("TrendingBusinesses");

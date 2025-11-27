@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,7 +11,7 @@ import {
   Image,
   Dimensions
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppContext } from '../../context/AppContext';
 import axios from 'axios';
@@ -20,53 +20,44 @@ const { width } = Dimensions.get('window');
 
 const LeadsScreen = () => {
   const navigation = useNavigation();
-  const { API_BASE_URL, IMAGE_BASE_URL } = useContext(AppContext);
-  
-  const [businessList, setBusinessList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    API_BASE_URL,
+    IMAGE_BASE_URL,
 
-  useEffect(() => {
-    fetchAllBusinesses();
-  }, []);
+    businessList,
+    isBusinessListLoading,
+    getMyBusinessList
 
-  const fetchAllBusinesses = async () => {
-    try {
-      setLoading(true);
-      const token = await AsyncStorage.getItem("token");
-      const response = await axios.get(`${API_BASE_URL}/user/partner_forms/all_business`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  } = useContext(AppContext);
 
-      console.log("your all business for leads: ", response);
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => { 
+        if(!businessList){
+          await getMyBusinessList();
+        }
+      };
+      loadData();
+    }, [])
+  );
 
-      if (response.data?.status) {
-        setBusinessList(response.data.existBusiness || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch businesses:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleBusinessPress = (business) => {
-    const bizId = business?.businessId?._id;
-    if (bizId) {
+  const handleBusinessPress = (business) => { 
+    console.log("navigate to : " , business?.businessId); 
       navigation.navigate("SingleLeadScreen", {
-        businessId: bizId,
-        businessName: business.businessName,
-        businessData: business
-      });
-    }
+        businessId: business?.businessId,
+        // businessName: business.businessName,
+        business: business
+      }); 
   };
 
   const renderBusinessCard = (item) => {
-    const logoUrl = item?.logo 
+    const logoUrl = item?.logo
       ? `${IMAGE_BASE_URL}/uploads/businessImages/${item.logo}`
       : null;
 
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.cardContainer}
         onPress={() => handleBusinessPress(item)}
         activeOpacity={0.9}
@@ -90,7 +81,7 @@ const LeadsScreen = () => {
                 </Text>
               </View>
             )}
-            
+
             {/* Title + Rating */}
             <View style={styles.titleContainer}>
               <View style={styles.titleRow}>
@@ -125,7 +116,7 @@ const LeadsScreen = () => {
               <Image
                 source={require('../../assets/images/location.png')}
                 style={styles.icon}
-              /> 
+              />
               <Text style={styles.address} numberOfLines={1}>
                 {item?.address
                   ? `${item?.address?.city || ''}, ${item?.address?.state || ''}`
@@ -133,18 +124,6 @@ const LeadsScreen = () => {
               </Text>
             </View>
 
-            {/* <View style={[styles.statusBadge, 
-              { backgroundColor: item?.businessId?.status === 'approved' ? '#E8F5E8' : 
-                                item?.businessId?.status === 'rejected' ? '#FFE8E8' : '#FFF4E6' }
-            ]}>
-              <Text style={[styles.statusText,
-                { color: item?.businessId?.status === 'approved' ? '#00C851' : 
-                         item?.businessId?.status === 'rejected' ? '#FF4444' : '#FF8800' }
-              ]}>
-                {item?.businessId?.status === 'approved' ? 'Approved' : 
-                 item?.businessId?.status === 'rejected' ? 'Rejected' : 'Pending'}
-              </Text>
-            </View> */}
           </View>
 
           {/* Leads Count */}
@@ -154,9 +133,6 @@ const LeadsScreen = () => {
                 source={require('../../assets/images/leads.png')}
                 style={styles.leadsIcon}
               />
-              {/* <Text style={styles.leadsText}>
-                {item?.leadCount || 0} Leads
-              </Text> */}
             </View>
             <Text style={styles.viewLeadsText}>
               View Leads →
@@ -167,7 +143,7 @@ const LeadsScreen = () => {
     );
   };
 
-  if (loading) {
+  if (isBusinessListLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar backgroundColor="#155DFC" barStyle="light-content" />
@@ -185,11 +161,11 @@ const LeadsScreen = () => {
 
       {/* Custom Header with Back Arrow */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Image 
+          <Image
             source={require('../../assets/images/backArrow.png')}
             style={styles.backArrow}
             resizeMode="contain"
@@ -204,8 +180,8 @@ const LeadsScreen = () => {
       </View>
 
       {/* Scrollable body */}
-      <ScrollView 
-        style={styles.scrollArea} 
+      <ScrollView
+        style={styles.scrollArea}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -253,17 +229,6 @@ const LeadsScreen = () => {
             </View>
           )}
         </View>
-
-        {/* Add New Business Button */}
-        {businessList.length === 0 && (
-          <TouchableOpacity
-            activeOpacity={0.9}
-            style={styles.addNewButton}
-            onPress={() => navigation.navigate("BecomePartnerFormScreen")}
-          >
-            <Text style={styles.addNewText}>+ Add New Business</Text>
-          </TouchableOpacity>
-        )}
 
         {/* Footer Note */}
         <Text style={styles.footerText}>

@@ -41,6 +41,8 @@ const BusinessSingleDetails = ({ business, contact, category, businessId }) => {
   };
 
   const handleMessage = async () => {
+    console.log("message api call for id : " , businessId);
+    
     const token = await AsyncStorage.getItem('token');
     const payload = { businessId, phone: primaryMobile };
     console.log('Message API payload:', payload);

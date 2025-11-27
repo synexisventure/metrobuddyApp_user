@@ -6,14 +6,14 @@ export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
 
-  // const API_BASE_URL = "http://192.168.31.28:7000/api";
-  // const IMAGE_BASE_URL = "http://192.168.31.28:7000";
+  const API_BASE_URL = "http://127.0.0.1:7000/api";
+  const IMAGE_BASE_URL = "http://127.0.0.1:7000";
 
   // const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
   // const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";  
 
-  const API_BASE_URL = " https://451abf03754d.ngrok-free.app/api";
-  const IMAGE_BASE_URL = " https://451abf03754d.ngrok-free.app";
+  // const API_BASE_URL = "https://5ebc2d9541bd.ngrok-free.app/api";
+  // const IMAGE_BASE_URL = "https://5ebc2d9541bd.ngrok-free.app";
 
   // ERROR HANDLER
   const [networkError, setNetworkError] = useState(false);
@@ -126,11 +126,12 @@ export const AppProvider = ({ children }) => {
   // FETCH ALL BUSINESS FORMS (1–7) 
   const [allBusinessData, setAllBusinessData] = useState(null);
   const [allBusinessLoading, setAllBusinessLoading] = useState(false);
-  const fetchAllBusinessSteps = async () => {
+  const fetchAllBusinessSteps = async (passedBusinessId ) => {
     setAllBusinessLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
-      const businessId = await AsyncStorage.getItem("businessId");
+
+      const businessId = passedBusinessId  || await AsyncStorage.getItem("businessId");
 
       if (!businessId) throw new Error("Business ID not found");
 
@@ -244,6 +245,54 @@ export const AppProvider = ({ children }) => {
   };
 
 
+  // All business getting (This api get all buisness registered through my number)
+  const [businessList, setBusinessList] = useState([]);
+  const [isBusinessListLoading, setIsBusinessListLoading] = useState(false);
+  const getMyBusinessList = async () => {
+    setIsBusinessListLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await axios.get(
+        `${API_BASE_URL}/user/partner_forms/all_business`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("My leads data : " ,response.data.data );
+      setBusinessList(response.data.data || []);
+    } catch (error) {
+      handleApiError(error, "Failed to fetch business list");
+      setBusinessList([]);
+    } finally {
+      setIsBusinessListLoading(false);
+    }
+  };
+
+  // ================= BUSINESS LEADS API ===================== 
+  const [businessLeads, setBusinessLeads] = useState([]);
+  const [businessLeadsLoading, setBusinessLeadsLoading] = useState(false);
+  const fetchBusinessLeads = async (businessId) => {
+    setBusinessLeadsLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await axios.get(
+        `${API_BASE_URL}/user/business/leads/${businessId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log("Business Leads Response:", response.data);
+
+      setBusinessLeads(response.data?.data || []);
+      setNetworkError(false);
+
+    } catch (error) {
+      const msg = handleApiError(error, "Failed to fetch business leads");
+      console.error("Business Leads API Error:", msg);
+      setBusinessLeads([]);
+    } finally {
+      setBusinessLeadsLoading(false);
+    }
+  };
 
 
 
@@ -315,6 +364,17 @@ export const AppProvider = ({ children }) => {
         trendingBusinesses,
         trendingLoading,
         fetchTrendingBusinesses,
+
+        // All business getting (This api get all buisness registered through my number)
+        businessList,
+        isBusinessListLoading,
+        getMyBusinessList,
+
+        // business leads 
+        businessLeads,
+        businessLeadsLoading,
+        fetchBusinessLeads,
+
 
       }}
     >

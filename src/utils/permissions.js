@@ -15,21 +15,34 @@ export const requestCameraPermission = async () => {
   return true;
 };
 
+
 export const requestGalleryPermission = async () => {
   if (Platform.OS === 'android') {
     const sdkInt = Platform.Version;
-    const permission =
-      sdkInt >= 33
-        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-        : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
 
-    const granted = await PermissionsAndroid.request(permission, {
-      title: 'Gallery Permission',
-      message: 'We need access to your gallery to choose photos.',
-      buttonPositive: 'OK',
-    });
+    if (sdkInt >= 33) {
+      // Android 13+ requires separate permissions for images & videos
+      const result = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
+      ]);
 
-    return granted === PermissionsAndroid.RESULTS.GRANTED;
+      const imageGranted =
+        result[PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES] ===
+        PermissionsAndroid.RESULTS.GRANTED;
+
+      const videoGranted =
+        result[PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO] ===
+        PermissionsAndroid.RESULTS.GRANTED;
+
+      return imageGranted && videoGranted;
+    } else {
+      // Android 12 and below
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    }
   }
   return true;
 };

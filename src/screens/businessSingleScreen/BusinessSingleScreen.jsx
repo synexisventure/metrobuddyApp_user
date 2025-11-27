@@ -17,7 +17,7 @@ const BusinessSingleScreen = () => {
   const route = useRoute();
   const { key } = route.params; // key : id from navigation
 
-  const { API_BASE_URL , handleApiError } = useContext(AppContext);
+  const { API_BASE_URL, handleApiError } = useContext(AppContext);
 
 
   const [activeTab, setActiveTab] = useState("Overview");
@@ -28,7 +28,9 @@ const BusinessSingleScreen = () => {
   useEffect(() => {
     const fetchBusinessDetails = async () => {
 
-      console.log("fetching for key : ", key.businessId || key );
+      const id = key?.businessId ? key.businessId : key;
+
+      console.log("fetching for key : ", id);
 
       try {
         setLoading(true);
@@ -36,8 +38,8 @@ const BusinessSingleScreen = () => {
 
         const token = await AsyncStorage.getItem("token");
 
-        const response = await axios.get(`${API_BASE_URL}/user/business/${key.businessId || key}`,
-        // const response = await axios.get(`${API_BASE_URL}/user/business/6908de84d2431590add9ec07`,
+        const response = await axios.get(`${API_BASE_URL}/user/business/${id}`,
+          // const response = await axios.get(`${API_BASE_URL}/user/business/6908de84d2431590add9ec07`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -71,7 +73,7 @@ const BusinessSingleScreen = () => {
         <Text>Loading business details...</Text>
       </View>
     );
-  }
+  }   
 
   if (error) {
     return (
@@ -94,7 +96,7 @@ const BusinessSingleScreen = () => {
       style={styles.container}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.scrollContent}
-    > 
+    >
       <BusinessSingleHeader
         business={business.businessDetails}
         contact={business.contactDetails}
@@ -108,9 +110,9 @@ const BusinessSingleScreen = () => {
         business={business.businessDetails}
         contact={business.contactDetails}
         category={business.businessCategory}
-        businessId="6906f87f301de96d720cba1c" // static businessId 
+        // businessId="6906f87f301de96d720cba1c" // static businessId
+        businessId= {key}
       />
-
 
       <BusinessSingleFilter
         activeTab={activeTab}
