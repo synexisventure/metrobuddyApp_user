@@ -109,7 +109,7 @@ export default CommonHeader
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#155DFC',
-        paddingTop: 10, // Space for status bar
+        // paddingTop: 10, // Space for status bar
         paddingHorizontal: 10,
         paddingBottom: 10,
         zIndex: 10,
