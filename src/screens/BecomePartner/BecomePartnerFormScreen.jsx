@@ -81,7 +81,7 @@ const AddBusinessScreen = () => {
         2: formStatus.contact_details ? 'completed' : 'pending',
         3: formStatus.business_timing ? 'completed' : 'pending',
         4: formStatus.business_category ? 'completed' : 'pending',
-        5: formStatus.add_products? 'completed' : 'pending',
+        5: formStatus.add_products ? 'completed' : 'pending',
         6: formStatus.photos_videos ? 'completed' : 'pending',
         7: formStatus.document_upload ? 'completed' : 'pending',
       });
@@ -96,7 +96,12 @@ const AddBusinessScreen = () => {
       case 4: return <Step5Form onNext={() => nextStep(true)} />;
       case 5: return <AddProductForm onNext={() => nextStep(true)} />;
       case 6: return <Step6Form onNext={() => nextStep(true)} />;
-      case 7: return <Step7Form onNext={() => nextStep(true)} />;
+      case 7:
+        return (
+          <Step7Form
+            onSubmit={() => nextStep(true)} 
+          />
+        );
       default: return null;
     }
   };

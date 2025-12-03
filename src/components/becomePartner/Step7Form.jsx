@@ -46,36 +46,36 @@ const Step7Form = ({ onSubmit = () => { } }) => {
 
       setDocs(prev => ({
         ...prev,
-        msmeCertificate: businessDocuments.msmeCertificate?.trim()
+        msmeCertificate: businessDocuments?.msmeCertificate?.trim()
           ? {
-            name: businessDocuments.msmeCertificate,
+            name: businessDocuments?.msmeCertificate,
             uploaded: true,
-            type: getFileType(businessDocuments.msmeCertificate),
-            uri: `${IMAGE_BASE_URL}/uploads/businessDocuments/${businessDocuments.msmeCertificate}`
+            type: getFileType(businessDocuments?.msmeCertificate),
+            uri: `${IMAGE_BASE_URL}/uploads/businessDocuments/${businessDocuments?.msmeCertificate}`
           }
           : prev.msmeCertificate,
-        cinCertificate: businessDocuments.cinCertificate?.trim()
+        cinCertificate: businessDocuments?.cinCertificate?.trim()
           ? {
-            name: businessDocuments.cinCertificate,
+            name: businessDocuments?.cinCertificate,
             uploaded: true,
-            type: getFileType(businessDocuments.cinCertificate),
-            uri: `${IMAGE_BASE_URL}/uploads/businessDocuments/${businessDocuments.cinCertificate}`
+            type: getFileType(businessDocuments?.cinCertificate),
+            uri: `${IMAGE_BASE_URL}/uploads/businessDocuments/${businessDocuments?.cinCertificate}`
           }
           : prev.cinCertificate,
-        gstinCertificate: businessDocuments.gstinCertificate?.trim()
+        gstinCertificate: businessDocuments?.gstinCertificate?.trim()
           ? {
-            name: businessDocuments.gstinCertificate,
+            name: businessDocuments?.gstinCertificate,
             uploaded: true,
-            type: getFileType(businessDocuments.gstinCertificate),
-            uri: `${IMAGE_BASE_URL}/uploads/businessDocuments/${businessDocuments.gstinCertificate}`
+            type: getFileType(businessDocuments?.gstinCertificate),
+            uri: `${IMAGE_BASE_URL}/uploads/businessDocuments/${businessDocuments?.gstinCertificate}`
           }
           : prev.gstinCertificate,
-        fssaiCertificate: businessDocuments.fssaiCertificate?.trim()
+        fssaiCertificate: businessDocuments?.fssaiCertificate?.trim()
           ? {
-            name: businessDocuments.fssaiCertificate,
+            name: businessDocuments?.fssaiCertificate,
             uploaded: true,
-            type: getFileType(businessDocuments.fssaiCertificate),
-            uri: `${IMAGE_BASE_URL}/uploads/businessDocuments/${businessDocuments.fssaiCertificate}`
+            type: getFileType(businessDocuments?.fssaiCertificate),
+            uri: `${IMAGE_BASE_URL}/uploads/businessDocuments/${businessDocuments?.fssaiCertificate}`
           }
           : prev.fssaiCertificate,
       }));
@@ -209,80 +209,31 @@ const Step7Form = ({ onSubmit = () => { } }) => {
     }
   };
 
-  //  Submit documents to backend
-  // const handleSubmit = async () => {
-  //   try {
-  //     const businessId = await AsyncStorage.getItem("businessId");
-  //     const token = await AsyncStorage.getItem("token");
 
-  //     if (!businessId) {
-  //       Alert.alert("Error", "Business ID not found.");
-  //       return;
-  //     }
-
-  //     setLoading(true);
-
-  //     const formData = new FormData();
-  //     formData.append("businessId", businessId);
-
-  //     Object.keys(docs).forEach((key) => {
-  //       if (docs[key]) {
-  //         formData.append(key, {
-  //           uri: docs[key].uri,
-  //           name: docs[key].name,
-  //           type: docs[key].type,
-  //         });
-  //       }
-  //     });
-
-  //     const res = await axios.post(
-  //       `${API_BASE_URL}/user/partner_forms/document_upload`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     Alert.alert("✅ Success", "Documents uploaded successfully!");
-  //     fetchBusinessDocuments();
-  //     onSubmit && onSubmit();
-
-  //     navigation.navigate("SubscriptionScreen");
-
-  //   } catch (error) {
-  //     const msg = handleApiError(error, "Failed to upload documents");
-  //     Alert.alert("Error", msg);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  //  Submit documents to backend  
   const handleSubmit = async () => {
     try {
-      const businessId = await AsyncStorage.getItem("businessId");
-      const token = await AsyncStorage.getItem("token");
-
       setLoading(true);
 
-      const formData = new FormData();
-
+      const asyncBusinessId = await AsyncStorage.getItem("businessId");
+      const token = await AsyncStorage.getItem("token");
       const putBusinessId = businessDocuments?.businessId;
 
-      // if (putBusinessId) {
-      //   formData.append("businessId", putBusinessId);
-      // }
+      // Priority: AsyncStorage > businessDocuments
+      const finalBusinessId = asyncBusinessId || putBusinessId;
 
-      if (!businessId || !businessDocuments?.businessId) {
+      if (!finalBusinessId) {
         Alert.alert("Error", "Business ID not found.");
+        setLoading(false);
         return;
       }
 
-      let hasNewFiles = false;
+      console.log("FINAL BUSINESS ID:", finalBusinessId);
 
+      const formData = new FormData();
+      formData.append("businessId", finalBusinessId);
+
+      // Add only new files
+      let hasNewFiles = false;
       Object.keys(docs).forEach((key) => {
         if (docs[key] && docs[key].uri && !docs[key].uri.startsWith("http")) {
           hasNewFiles = true;
@@ -300,24 +251,16 @@ const Step7Form = ({ onSubmit = () => { } }) => {
         return;
       }
 
-      // ✅ Sirf businessDocuments.businessId se check karo
-      const isEditing = !!putBusinessId;
+      // If documents exist → PUT else → POST
+      const isEditing = !!businessDocuments;
 
-      let url, method;
+      const url = isEditing
+        ? `${API_BASE_URL}/user/partner_forms/document_upload/${finalBusinessId}`
+        : `${API_BASE_URL}/user/partner_forms/document_upload`;
 
-      if (isEditing) {
-        // PUT call
-        url = `${API_BASE_URL}/user/partner_forms/document_upload/${putBusinessId}`;
-        method = 'put';
-      } else {
-        // POST call
-        url = `${API_BASE_URL}/user/partner_forms/document_upload`;
-        method = 'post';
-      }
+      const method = isEditing ? "put" : "post";
 
-      console.log(`${method.toUpperCase()} call to:`, url);
-      console.log("putBusinessId:", putBusinessId);
-      console.log("isEditing:", isEditing);
+      console.log(`${method.toUpperCase()} →`, url);
 
       const res = await axios[method](url, formData, {
         headers: {
@@ -325,6 +268,7 @@ const Step7Form = ({ onSubmit = () => { } }) => {
           Authorization: `Bearer ${token}`,
         },
       });
+
       Alert.alert(
         "Success",
         isEditing ? "Documents updated successfully!" : "Documents submitted successfully!"
@@ -335,21 +279,15 @@ const Step7Form = ({ onSubmit = () => { } }) => {
       navigation.navigate("SubscriptionScreen");
 
     } catch (error) {
-      console.log("Upload docs failed:", error?.response);
-
-      if (error?.response) {
-        showToast("error", "Error", error?.response?.data?.message);
-      } else if (!error?.response) {
-        showToast("error", "Error", "Network error. Please check your internet connection.");
-      } else {
-        showToast("error", "Error", "Something went wrong.");
-      }
+      console.log("Upload Error:", error?.response?.data || error);
+      const msg = error?.response?.data?.message || "Something went wrong.";
+      Alert.alert("Error", msg);
     } finally {
       setLoading(false);
     }
   };
 
-  // Document card component
+
   const renderDocumentCard = (doc) => (
     <View key={doc.id} style={styles.documentCard}>
       <View style={styles.documentInfo}>

@@ -138,6 +138,9 @@ const Step6Form = ({ onNext = () => { } }) => {
       return;
     }
 
+    console.log("my business id in photos : ", businessId);
+
+
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("token");
@@ -171,18 +174,19 @@ const Step6Form = ({ onNext = () => { } }) => {
 
 
       // 🔥 AUTO POST or PUT (based on existing data)
-      console.log("my business media data : ", businessMedia.businessId);
+      console.log("my business media data : ", businessMedia?.businessId);
 
-      const isEditing = businessMedia.businessId;
+      const isEditing = businessMedia?.businessId ;
+      // const isEditing = Boolean(businessMedia?.businessId);
       // const isEditing = true;
 
       const url = isEditing
-        ? `${API_BASE_URL}/user/partner_forms/photos_videos/${businessMedia.businessId}`
+        ? `${API_BASE_URL}/user/partner_forms/photos_videos/${businessMedia?.businessId}`
         : `${API_BASE_URL}/user/partner_forms/photos_videos`;
 
       const method = isEditing ? "put" : "post";
 
-      console.log("Calling put url : ", method, `${API_BASE_URL}/user/partner_forms/photos_videos/${businessMedia.businessId}`);
+      console.log("Calling put url : ", method, `${API_BASE_URL}/user/partner_forms/photos_videos/${businessMedia?.businessId}`);
 
 
       const res = await axios[method](url, formData, {
@@ -367,7 +371,7 @@ const Step6Form = ({ onNext = () => { } }) => {
               paused={true}
               muted={true}
             />
-            {/* Video Play Overlay */} 
+            {/* Video Play Overlay */}
             <View style={styles.videoOverlay}>
               <View style={styles.playButton}>
                 <Text style={styles.playIcon}>▶</Text>

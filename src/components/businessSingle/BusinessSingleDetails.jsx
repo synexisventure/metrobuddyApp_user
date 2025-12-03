@@ -26,7 +26,7 @@ const BusinessSingleDetails = ({ business, contact, category, businessId }) => {
   const handleCall = async () => {
     const token = await AsyncStorage.getItem('token');
     const payload = { businessId, phone: primaryMobile };
-    console.log('Call API payload:', payload);
+    console.log('Call call API payload:', payload);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/user/business/call`, payload, {
@@ -41,7 +41,7 @@ const BusinessSingleDetails = ({ business, contact, category, businessId }) => {
   };
 
   const handleMessage = async () => {
-    console.log("message api call for id : " , businessId);
+    // console.log("message api  for id : " , businessId);
     
     const token = await AsyncStorage.getItem('token');
     const payload = { businessId, phone: primaryMobile };
