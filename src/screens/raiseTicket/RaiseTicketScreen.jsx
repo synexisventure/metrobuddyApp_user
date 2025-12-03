@@ -70,17 +70,28 @@ const RaiseTicketScreen = ({ navigation }) => {
                     }
                 }
             );
- 
-            
+
+
 
             setDescription("");
             setModalVisible(false);
             fetchTickets();
             Alert.alert("Success", "Ticket created successfully!");
-        } catch (err) {
-            console.log("Create ticket error:", err.response);
-            Alert.alert("Error", "Failed to create ticket");
-        } finally {
+        }
+
+        catch (error) {
+            console.log("Create ticket failed:", error?.response);
+
+            if (error?.response) {
+                Alert.alert( "Error", error?.response?.data?.message);
+            } else if (!error?.response) {
+                Alert.alert( "Error", "Network error. Please check your internet connection.");
+            } else {
+                Alert.alert("Error", "Something went wrong.");
+            }
+        }
+
+        finally {
             setLoading(false);
         }
     };
@@ -214,7 +225,7 @@ const RaiseTicketScreen = ({ navigation }) => {
                             onChangeText={setDescription}
                             multiline
                             numberOfLines={5}
-                            textAlignVertical="top" 
+                            textAlignVertical="top"
                         />
 
                         <View style={styles.modalActions}>
