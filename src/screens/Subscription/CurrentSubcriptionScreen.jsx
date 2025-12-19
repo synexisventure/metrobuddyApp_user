@@ -8,7 +8,7 @@ import { AppContext } from '../../context/AppContext'
 const SubscriptionDetailsScreen = () => {
   const navigation = useNavigation()
   const { API_BASE_URL } = useContext(AppContext)
-  
+
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -36,7 +36,7 @@ const SubscriptionDetailsScreen = () => {
       } else {
         setSubscription(null)
       }
-      
+
     } catch (error) {
       Alert.alert("Error", "Failed to load subscriptions")
       console.log("SUB ERROR:", error)
@@ -70,13 +70,13 @@ const SubscriptionDetailsScreen = () => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Subscription Details</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.buyBtn}
-          onPress={() => navigation.navigate('SubscriptionScreen')}
+          onPress={() => navigation.navigate('SubscriptionScreen' , {isNavigateToBack : true})}
         >
           <Image source={require('../../assets/images/security.png')} style={styles.icon} />
           <Text style={styles.buyText}>
@@ -92,14 +92,14 @@ const SubscriptionDetailsScreen = () => {
           <Text style={styles.cardTitle}>No Active Subscription</Text>
           <Text style={styles.cardText}>Upgrade to unlock premium features</Text>
 
-          <View style={styles.features}>
+          {/* <View style={styles.features}>
             {['More Business Leads', 'Advanced Analytics', 'Priority Support'].map((f, i) => (
               <View key={i} style={styles.feature}>
                 <Image source={require('../../assets/images/check.png')} style={styles.checkIcon} />
                 <Text style={styles.featureText}>{f}</Text>
               </View>
             ))}
-          </View>
+          </View> */}
         </View>
       ) : (
         // ACTIVE SUBSCRIPTION UI
@@ -125,7 +125,7 @@ const SubscriptionDetailsScreen = () => {
               <Detail label="Business" value={subscription.businessId?.businessName} />
               <Detail label="Plan Type" value={subscription.planType} />
             </View>
-{/* 
+            {/* 
             <View style={styles.autoRenewal}>
               <View>
                 <Text style={styles.autoLabel}>Auto Renewal</Text>
@@ -173,8 +173,22 @@ const SubscriptionDetailsScreen = () => {
       <View style={styles.support}>
         <Text style={styles.supportTitle}>Need Help?</Text>
         <Text style={styles.supportText}>Contact our support team for assistance</Text>
-        <TouchableOpacity style={styles.supportBtn}>
-          <Text style={styles.supportBtnText}>Contact Support</Text>
+        <TouchableOpacity
+          style={styles.supportBtn}
+          onPress={() => {
+
+            // navigation.navigate("Profile",{
+            //   screen : "HelpAndSupportScreen"
+            // })
+            navigation.navigate("MainTabs", {
+              screen: "Profile",
+              params: {
+                screen: "HelpAndSupportScreen"
+              }
+            })
+          }}
+        >
+          <Text style={styles.supportBtnText}>Contact Supportt</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

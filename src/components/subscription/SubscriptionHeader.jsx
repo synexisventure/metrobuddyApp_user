@@ -2,28 +2,60 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const SubscriptionHeader = ({ isYearly, onToggle }) => {
+const SubscriptionHeader = ({ isYearly, onToggle, isNavigateToBack = false }) => {
     const navigation = useNavigation();
 
     return (
         <View style={styles.container}>
             {/* First Row - Back Button and Title */}
             <View style={styles.firstRow}>
-                <TouchableOpacity 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                    activeOpacity={0.7}
-                >
-                    <Image 
-                        source={require('../../assets/images/backArrow.png')}
-                        style={styles.backIcon}
-                    />
-                </TouchableOpacity>
-                
-                <Text style={styles.title}>Choose Subscription Plan</Text>
-                
-                {/* Empty view for balance */}
-                <View style={styles.placeholder} />
+
+
+                {(isNavigateToBack == true) ?
+                    <>
+                        <TouchableOpacity
+                            style={styles.backButton}
+                            onPress={() => navigation.goBack()}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                source={require('../../assets/images/backArrow.png')}
+                                style={styles.backIcon}
+                            />
+                        </TouchableOpacity>
+
+
+                        <Text style={styles.title}>Choose Subscription Plan</Text>
+
+                        {/* Empty view for balance */}
+                        <View style={styles.placeholder} />
+
+                    </>
+                    : <>
+                        {/* Empty view for balance */}
+                        <View style={styles.placeholder} />
+
+                        <Text style={styles.title}>Choose Subscription Plan</Text>
+
+                        <TouchableOpacity
+                            style={styles.backButton}
+                            onPress={() => {
+
+                                navigation.navigate("MainTabs", {
+                                    screen: "Home"
+                                })
+                            }
+                            }
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                source={require('../../assets/images/cross.png')}
+                                style={styles.backIcon}
+                            />
+                        </TouchableOpacity>
+                    </>
+                }
+
             </View>
 
             {/* Subtitle */}
@@ -79,7 +111,7 @@ const styles = StyleSheet.create({
     backIcon: {
         width: 20,
         height: 20,
-        tintColor: '#fff',
+        // tintColor: '#fff',
     },
     title: {
         color: '#fff',

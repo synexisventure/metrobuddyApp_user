@@ -19,7 +19,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { requestCameraPermission, requestGalleryPermission } from "../../utils/permissions";
 
-const Step2Form = ({ onNext = ()=>{}, userId }) => {
+const Step2Form = ({ onNext = () => { }, userId }) => {
   // ✅ Use from context
   const {
     API_BASE_URL,
@@ -42,6 +42,7 @@ const Step2Form = ({ onNext = ()=>{}, userId }) => {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [description, setDescription] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
   const [website, setWebsite] = useState("");
 
   const [businessDetailsLoading, setBusinessDetailsLoading] = useState(false);
@@ -58,6 +59,7 @@ const Step2Form = ({ onNext = ()=>{}, userId }) => {
     setLogo(null);
     setWebsite("");
     setDescription("");
+    setShortDescription("");
   };
 
 
@@ -71,7 +73,7 @@ const Step2Form = ({ onNext = ()=>{}, userId }) => {
   const [errors, setErrors] = useState({});
 
   // 🧩 On mount, fetch data from context
-  useEffect(() => { 
+  useEffect(() => {
     const loadData = async () => {
       resetForm();
       setBusinessDetailsLoading(true);
@@ -106,9 +108,9 @@ const Step2Form = ({ onNext = ()=>{}, userId }) => {
       setArea(address.area || "");
       setCity(address.city || "");
       setState(address.state || "");
-      setDescription
       setWebsite(businessDetails?.website || "");
       setDescription(businessDetails?.description || "");
+      setShortDescription(businessDetails?.shortDescription || "");
 
       if (businessDetails.logo) {
         setLogo({ uri: `${IMAGE_BASE_URL}/uploads/businessImages/${businessDetails.logo}` });
@@ -161,15 +163,19 @@ const Step2Form = ({ onNext = ()=>{}, userId }) => {
   const validateFields = () => {
     const newErrors = {};
 
-    if (!businessName.trim()) newErrors.businessName = "Business name is required";
-    if (!pincode.trim()) newErrors.pincode = "Pincode is required";
+    if (!businessName?.trim()) newErrors.businessName = "Business name is required";
+    if (!pincode?.trim()) newErrors.pincode = "Pincode is required";
     if (!logo) newErrors.logo = "Business logo is required";
-    if (!plotNo.trim()) newErrors.plotNo = "Plot/Building No. is required";
-    if (!street.trim()) newErrors.street = "Street/Road is required";
-    if (!landmark.trim()) newErrors.landmark = "Landmark is required";
-    if (!area.trim()) newErrors.area = "Area is required";
-    if (!city.trim()) newErrors.city = "City is required";
-    if (!state.trim()) newErrors.state = "State is required";
+    if (!plotNo?.trim()) newErrors.plotNo = "Plot/Building No. is required";
+    if (!street?.trim()) newErrors.street = "Street/Road is required";
+    if (!landmark?.trim()) newErrors.landmark = "Landmark is required";
+    if (!area?.trim()) newErrors.area = "Area is required";
+    if (!city?.trim()) newErrors.city = "City is required";
+    if (!state?.trim()) newErrors.state = "State is required";
+    if (!shortDescription?.trim()) {
+      newErrors.shortDescription = "Short description is required";
+    }
+
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -222,6 +228,7 @@ const Step2Form = ({ onNext = ()=>{}, userId }) => {
       formData.append("city", city);
       formData.append("state", state);
       formData.append("description", description || "");
+      formData.append("shortDescription", shortDescription || "");
       formData.append("website", website || "");
 
 
@@ -233,18 +240,7 @@ const Step2Form = ({ onNext = ()=>{}, userId }) => {
         });
       }
 
-      // const response = await axios.post(
-      //   `${API_BASE_URL}/user/partner_forms/business_details`,
-      //   formData,
-      //   {
-      //     headers: {
-      //       "Content-Type": "multipart/form-data",
-      //       Authorization: `Bearer ${token}`,
-      //     },
-      //   }
-      // );
-
-      // ✅ Detect whether to use POST or PUT
+      // Detect whether to use POST or PUT
       const isUpdate = !!businessDetails && !!businessDetails._id;
 
       // choose API URL dynamically
@@ -272,13 +268,13 @@ const Step2Form = ({ onNext = ()=>{}, userId }) => {
 
       fetchBusinessDetails();
     } catch (error) {
-      console.log("error : " , error);
-      
+      console.log("error : ", error);
+
       const msg = handleApiError(error, "Failed to save business details");
       Alert.alert("Error", msg);
     } finally {
-      setLoading(false); 
-      
+      setLoading(false);
+
     }
   };
 
@@ -354,17 +350,20 @@ const Step2Form = ({ onNext = ()=>{}, userId }) => {
             {renderInput("State", state, setState, "state")}
           </View>
         </View>
+        
+        {renderInput("Short Description", shortDescription, setShortDescription, "shortDescription")}
 
-        {/* {renderInput("Description", description, setDescription, "description")} */}
+        {renderInput("Description", description, setDescription, "description")}
 
-        <Text style={styles.label}>Description (optional)</Text>
+
+        {/* <Text style={styles.label}>Description (optional)</Text>
         <TextInput
           style={[styles.input, { height: 100, textAlignVertical: "top" }]}
           multiline
           placeholder="Enter description"
           value={description}
           onChangeText={setDescription}
-        />
+        /> */}
 
         {renderInput("Website (optional)", website, setWebsite, "website")}
 

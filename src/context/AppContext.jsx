@@ -6,11 +6,11 @@ export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
 
-  const API_BASE_URL = "http://127.0.0.1:7000/api";
-  const IMAGE_BASE_URL = "http://127.0.0.1:7000";
+  // const API_BASE_URL = "http://192.168.1.11:7000/api";
+  // const IMAGE_BASE_URL = "http://192.168.1.11:7000";
 
-  // const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
-  // const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";  
+  const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
+  const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";  
 
   // const API_BASE_URL = "https://5ebc2d9541bd.ngrok-free.app/api";
   // const IMAGE_BASE_URL = "https://5ebc2d9541bd.ngrok-free.app";
@@ -45,7 +45,7 @@ export const AppProvider = ({ children }) => {
 
   // FORM COMPLETION STATUS 
   const [formStatus, setFormStatus] = useState(null);
-  const [formStatusLoading, setFormStatusLoading] = useState(false);
+  const [formStatusLoading, setFormStatusLoading] = useState(false); 
   const fetchFormStatus = async () => {
     setFormStatusLoading(true);
     try {
@@ -63,7 +63,10 @@ export const AppProvider = ({ children }) => {
     } catch (error) {
       const msg = handleApiError(error, "Failed to fetch form completion status");
       console.error(" Form Status Error:", msg);
-      setFormStatus(null);
+      // setFormStatus(null);
+      setFormStatus(undefined); //  forces a change
+      setTimeout(() => setFormStatus(null), 0); //  triggers second change
+
     } finally {
       setFormStatusLoading(false);
     }
@@ -126,12 +129,12 @@ export const AppProvider = ({ children }) => {
   // FETCH ALL BUSINESS FORMS (1–7) 
   const [allBusinessData, setAllBusinessData] = useState(null);
   const [allBusinessLoading, setAllBusinessLoading] = useState(false);
-  const fetchAllBusinessSteps = async (passedBusinessId ) => {
+  const fetchAllBusinessSteps = async (passedBusinessId) => {
     setAllBusinessLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
 
-      const businessId = passedBusinessId  || await AsyncStorage.getItem("businessId");
+      const businessId = passedBusinessId || await AsyncStorage.getItem("businessId");
 
       if (!businessId) throw new Error("Business ID not found");
 
@@ -257,7 +260,7 @@ export const AppProvider = ({ children }) => {
         `${API_BASE_URL}/user/partner_forms/all_business`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("My leads data : " ,response.data.data );
+      console.log("My leads data : ", response.data.data);
       setBusinessList(response.data.data || []);
     } catch (error) {
       handleApiError(error, "Failed to fetch business list");

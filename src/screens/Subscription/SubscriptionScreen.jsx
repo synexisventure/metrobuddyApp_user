@@ -14,14 +14,21 @@ import { AppContext } from '../../context/AppContext';
 import SubscriptionHeader from "../../components/subscription/SubscriptionHeader";
 import SubscriptionBodyMonthly from "../../components/subscription/SubscriptionBodyMonthly";
 import SubscriptionBodyYearly from "../../components/subscription/SubscriptionBodyYearly";
+import { useRoute } from '@react-navigation/native';
 
 const SubscriptionScreen = () => {
+  
+  const route = useRoute();
+
+  const {isNavigateToBack} = route.params || {}; 
+
   const [isYearly, setIsYearly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userSubscriptions, setUserSubscriptions] = useState([]);
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
   const [currentBusinessId, setCurrentBusinessId] = useState(null);
   const { API_BASE_URL } = useContext(AppContext);
+
 
   useEffect(() => {
     fetchCurrentBusiness();
@@ -228,6 +235,7 @@ const SubscriptionScreen = () => {
       <SubscriptionHeader
         isYearly={isYearly}
         onToggle={() => setIsYearly(!isYearly)}
+        isNavigateToBack = {isNavigateToBack}
       />
 
       {/* Current Subscription Info */}
