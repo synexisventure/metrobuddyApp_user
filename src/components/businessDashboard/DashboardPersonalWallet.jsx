@@ -158,13 +158,13 @@ const styles = StyleSheet.create({
   editIcon: {
     width: 14,
     height: 14,
-    tintColor: '#155DFC',
+    tintColor: '#B91C1C',
     marginRight: 6,
   },
   editText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#155DFC',
+    color: '#B91C1C',
   },
   documentsContainer: {
     marginBottom: 20,
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     color: '#FF3B30',
   },
   viewButton: {
-    backgroundColor: '#155DFC',
+    backgroundColor: '#B91C1C',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,

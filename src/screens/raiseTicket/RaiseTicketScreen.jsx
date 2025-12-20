@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         paddingHorizontal: 20,
         paddingVertical: 15,
-        backgroundColor: "#155DFC",
+        backgroundColor: "#B91C1C",
     },
     backBtn: {
         padding: 5,
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     createBtn: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#155DFC",
+        backgroundColor: "#B91C1C",
         margin: 20,
         paddingVertical: 16,
         paddingHorizontal: 20,
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         gap: 10,
         elevation: 3,
-        shadowColor: "#155DFC",
+        shadowColor: "#B91C1C",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         shadowRadius: 4,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     },
     ticketCount: {
         fontSize: 16,
-        color: "#155DFC",
+        color: "#B91C1C",
         fontWeight: "600",
     },
     listContent: {
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     ticketId: {
         fontSize: 12,
         fontWeight: "600",
-        color: "#155DFC",
+        color: "#B91C1C",
     },
     statusBadge: {
         borderRadius: 6,
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "600",
     },
-    open: { backgroundColor: "#155DFC" },
+    open: { backgroundColor: "#B91C1C" },
     pending: { backgroundColor: "#FFB800" },
     closed: { backgroundColor: "#999" },
     description: {
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     },
     agentText: {
         fontSize: 11,
-        color: "#155DFC",
+        color: "#B91C1C",
         fontWeight: "500",
     },
     // EMPTY STATE
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#F8F9FA",
     },
     submitBtn: {
-        backgroundColor: "#155DFC",
+        backgroundColor: "#B91C1C",
     },
     disabledBtn: {
         opacity: 0.6,
@@ -513,13 +513,13 @@ const styles = StyleSheet.create({
         marginHorizontal: 0,
         backgroundColor: "#E8F1FF",
         borderLeftWidth: 4,
-        borderLeftColor: "#155DFC",
+        borderLeftColor: "#B91C1C",
         padding: 12,
         borderRadius: 8,
         marginBottom: 15,
     },
     infoText: {
-        color: "#155DFC",
+        color: "#B91C1C",
         fontSize: 14,
         fontWeight: "600",
     },

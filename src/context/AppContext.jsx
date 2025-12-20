@@ -6,11 +6,11 @@ export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
 
-  // const API_BASE_URL = "http://192.168.1.11:7000/api";
+  const API_BASE_URL = "http://192.168.1.11:7000/api";
   // const IMAGE_BASE_URL = "http://192.168.1.11:7000";
 
-  const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
-  const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";  
+  // const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
+  const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";
 
   // const API_BASE_URL = "https://5ebc2d9541bd.ngrok-free.app/api";
   // const IMAGE_BASE_URL = "https://5ebc2d9541bd.ngrok-free.app";
@@ -45,7 +45,7 @@ export const AppProvider = ({ children }) => {
 
   // FORM COMPLETION STATUS 
   const [formStatus, setFormStatus] = useState(null);
-  const [formStatusLoading, setFormStatusLoading] = useState(false); 
+  const [formStatusLoading, setFormStatusLoading] = useState(false);
   const fetchFormStatus = async () => {
     setFormStatusLoading(true);
     try {
@@ -298,6 +298,36 @@ export const AppProvider = ({ children }) => {
   };
 
 
+  // get user profile
+  const [profile, setProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const fetchUserProfile = async () => {
+    setProfileLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await axios.get(
+        `${API_BASE_URL}/user/profile`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Profile Response:", response.data);
+
+      setProfile(response.data?.data || null);
+      setNetworkError(false);
+
+    } catch (error) {
+      const msg = handleApiError(error, "Failed to fetch profile");
+      console.error("Profile API Error:", msg);
+      setProfile(null);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   // PROVIDER EXPORT 
   return (
@@ -378,6 +408,10 @@ export const AppProvider = ({ children }) => {
         businessLeadsLoading,
         fetchBusinessLeads,
 
+        // get user profile
+        profile,
+        profileLoading,
+        fetchUserProfile,
 
       }}
     >

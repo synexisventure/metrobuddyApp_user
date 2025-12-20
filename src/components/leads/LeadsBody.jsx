@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   icon: {
     height: 24,
     width: 24,
-    tintColor: '#155DFC',
+    tintColor: '#B91C1C',
   },
   textContainer: {
     flex: 1,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#155DFC',
+    color: '#B91C1C',
   },
   viewMoreBtn: {
     backgroundColor: '#34448B',

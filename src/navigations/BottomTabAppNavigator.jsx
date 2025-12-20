@@ -58,7 +58,7 @@ const BottomTabAppNavigator = () => {
                     // borderTopWidth: 0,
                 },
                 // Set colors for the screenshot look (Active: Blue, Inactive: Gray)
-                tabBarActiveTintColor: '#155DFC',
+                tabBarActiveTintColor: '#B91C1C',
                 tabBarInactiveTintColor: '#999',
                 tabBarLabelStyle: {
                     // fontSize: 18,

@@ -82,7 +82,7 @@ const BecomePartnerScreen = () => {
     if (isBusinessListLoading && businessList.length === 0) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#155DFC" />
+                <ActivityIndicator size="large" color="#B91C1C" />
                 <Text style={styles.loadingText}>Loading your dashboard...</Text>
             </View>
         );
@@ -90,7 +90,7 @@ const BecomePartnerScreen = () => {
 
     return (
         <View style={styles.mainContainer}>
-            <StatusBar backgroundColor="#155DFC" barStyle="light-content" />
+            <StatusBar backgroundColor="#B91C1C" barStyle="light-content" />
 
             {/* Header */}
             <StepFormsHeader
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     },
     // Welcome Section
     welcomeCard: {
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
         borderRadius: 16,
         padding: 20,
         marginBottom: 20,
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 8,
         borderLeftWidth: 4,
-        borderLeftColor: '#155DFC',
+        borderLeftColor: '#B91C1C',
     },
     leadsCardContent: {
         flexDirection: 'row',
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     leadsCountBadge: {
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
         paddingHorizontal: 10,
         paddingVertical: 6,
         borderRadius: 12,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     arrowIcon: {
         width: 16,
         height: 16,
-        tintColor: '#155DFC',
+        tintColor: '#B91C1C',
     },
     // Businesses Section
     businessesSection: {
@@ -431,12 +431,12 @@ const styles = StyleSheet.create({
     },
     // Add New Button
     addNewButton: {
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
         paddingVertical: 16,
         borderRadius: 12,
         alignItems: 'center',
         elevation: 4,
-        shadowColor: '#155DFC',
+        shadowColor: '#B91C1C',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,

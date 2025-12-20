@@ -223,7 +223,7 @@ const SubscriptionScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#155DFC" />
+        <ActivityIndicator size="large" color="#B91C1C" />
         <Text style={styles.loadingText}>Loading subscription plans...</Text>
       </View>
     );
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   planPrice: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#155DFC',
+    color: '#B91C1C',
     marginBottom: 4,
   },
   planExpiry: {

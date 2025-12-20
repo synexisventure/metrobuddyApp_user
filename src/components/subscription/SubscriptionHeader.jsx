@@ -89,7 +89,7 @@ export default SubscriptionHeader;
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
         paddingTop: 10,
         paddingBottom: 10,
         paddingHorizontal: 20,
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
         width: 18,
         height: 18,
         borderRadius: 9,
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
     },
     circleRight: {
         alignSelf: 'flex-end',

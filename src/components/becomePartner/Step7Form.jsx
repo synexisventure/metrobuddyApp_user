@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   viewButton: {
-    backgroundColor: '#155DFC',
+    backgroundColor: '#B91C1C',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,

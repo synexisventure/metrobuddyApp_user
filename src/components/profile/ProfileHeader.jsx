@@ -1,7 +1,12 @@
-import React from "react";
+import { useNavigation } from "@react-navigation/native";
+import React, { useContext } from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { AppContext } from "../../context/AppContext";
 
 const ProfileHeader = () => {
+    const navigation = useNavigation();
+    const { profile } = useContext(AppContext);
+
     return (
         <View style={styles.main}>
             {/* --- Top Row (Image + Info) --- */}
@@ -14,7 +19,10 @@ const ProfileHeader = () => {
                         />
                     </View>
 
-                    <TouchableOpacity style={styles.editIcon}>
+                    <TouchableOpacity
+                        style={styles.editIcon}
+                        onPress={() => navigation.navigate('EditProfileScreen')}
+                    >
                         <Image
                             source={require("../../assets/images/edit.png")}
                             style={styles.editImage}
@@ -23,8 +31,15 @@ const ProfileHeader = () => {
                 </View>
 
                 <View style={styles.infoContainer}>
-                    <Text style={styles.name}>Priya Sharma</Text>
-                    <Text style={styles.memberSince}>Member since Jan 2024</Text>
+                    {/* Name */}
+                    <Text style={styles.name}>
+                        {profile?.name || "No name added"}
+                    </Text>
+
+                    {/* Member since */}
+                    <Text style={styles.memberSince}>
+                        Member since : {profile?.createdAt ? profile.createdAt : "No data"}
+                    </Text>
 
                     <View style={styles.badge}>
                         <Text style={styles.badgeText}>Premium Member</Text>
@@ -34,28 +49,37 @@ const ProfileHeader = () => {
 
             {/* --- Contact Info Section --- */}
             <View style={styles.detailsContainer}>
+                {/* Phone */}
                 <View style={styles.row}>
                     <Image
                         source={require("../../assets/images/phone.png")}
                         style={styles.rowIcon}
                     />
-                    <Text style={styles.text}>+91 98765 43210</Text>
+                    <Text style={styles.text}>
+                        {profile?.phone ? `+91 ${profile.phone}` : "No data"}
+                    </Text>
                 </View>
 
+                {/* Email */}
                 <View style={styles.row}>
                     <Image
                         source={require("../../assets/images/mail.png")}
                         style={styles.rowIcon}
                     />
-                    <Text style={styles.text}>priya.sharma@email.com</Text>
+                    <Text style={styles.text}>
+                        {profile?.email || "No email added"}
+                    </Text>
                 </View>
 
+                {/* Location */}
                 <View style={styles.row}>
                     <Image
                         source={require("../../assets/images/location.png")}
                         style={styles.rowIcon}
                     />
-                    <Text style={styles.text}>Mumbai, Maharashtra</Text>
+                    <Text style={styles.text}>
+                        {profile?.location || "No location found"}
+                    </Text>
                 </View>
             </View>
         </View>
@@ -63,6 +87,7 @@ const ProfileHeader = () => {
 };
 
 export default ProfileHeader;
+
 
 const styles = StyleSheet.create({
     main: {

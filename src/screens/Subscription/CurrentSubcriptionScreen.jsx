@@ -48,7 +48,7 @@ const SubscriptionDetailsScreen = () => {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#155DFC" />
+        <ActivityIndicator size="large" color="#B91C1C" />
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     )
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: 'bold', color: '#333' },
   buyBtn: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#155DFC', paddingHorizontal: 16,
+    backgroundColor: '#B91C1C', paddingHorizontal: 16,
     paddingVertical: 10, borderRadius: 20
   },
   icon: { width: 16, height: 16, marginRight: 6, tintColor: 'white' },
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 12 },
 
   actions: { padding: 16 },
-  primaryBtn: { backgroundColor: '#155DFC', padding: 16, borderRadius: 10, alignItems: 'center', marginBottom: 12 },
+  primaryBtn: { backgroundColor: '#B91C1C', padding: 16, borderRadius: 10, alignItems: 'center', marginBottom: 12 },
   secondaryBtn: { backgroundColor: '#FF6B6B', padding: 16, borderRadius: 10, alignItems: 'center' },
   btnText: { color: 'white', fontWeight: 'bold' },
 

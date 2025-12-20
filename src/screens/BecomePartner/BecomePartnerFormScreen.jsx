@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   stepTextInside: { color: '#fff', fontWeight: '700', fontSize: 12 },
   completed: { backgroundColor: '#27ae60' },
   skipped: { backgroundColor: '#f39c12' },
-  active: { backgroundColor: '#155DFC' },
+  active: { backgroundColor: '#B91C1C' },
   pending: { backgroundColor: '#d3d3d3' },
   stepLabel: { fontSize: 10, color: '#555', marginTop: 6, textAlign: 'center', width: 70 },
   mandatoryStar: {
@@ -231,11 +231,11 @@ const styles = StyleSheet.create({
   prevIcon: {
     width: 20,
     height: 20,
-    tintColor: '#155DFC',
+    tintColor: '#B91C1C',
     marginRight: 8,
   },
   prevText: {
-    color: '#155DFC',
+    color: '#B91C1C',
     fontSize: 15,
     fontWeight: '600',
   },

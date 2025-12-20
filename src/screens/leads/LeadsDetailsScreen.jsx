@@ -794,7 +794,7 @@ const styles = StyleSheet.create({
         minHeight: 60,
     },
     navButton: {
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
         paddingHorizontal: screenWidth < 400 ? 12 : 16,
         paddingVertical: 8,
         borderRadius: 6,
@@ -833,8 +833,8 @@ const styles = StyleSheet.create({
         marginHorizontal: 2,
     },
     activePageNumber: {
-        backgroundColor: '#155DFC',
-        borderColor: '#155DFC',
+        backgroundColor: '#B91C1C',
+        borderColor: '#B91C1C',
     },
     pageNumberText: {
         fontSize: screenWidth < 400 ? 12 : 14,

@@ -236,11 +236,11 @@
 //   editButton: {
 //     flexDirection: "row",
 //     alignItems: "center",
-//     backgroundColor: "#155DFC",
+//     backgroundColor: "#B91C1C",
 //     paddingHorizontal: 12,
 //     paddingVertical: 8,
 //     borderRadius: 8,
-//     shadowColor: "#155DFC",
+//     shadowColor: "#B91C1C",
 //     shadowOffset: { width: 0, height: 2 },
 //     shadowOpacity: 0.2,
 //     shadowRadius: 4,
@@ -270,7 +270,7 @@
 //   sectionIcon: {
 //     width: 18,
 //     height: 18,
-//     tintColor: "#155DFC",
+//     tintColor: "#B91C1C",
 //     marginRight: 8,
 //   },
 //   sectionTitle: {
@@ -391,11 +391,11 @@
 //     lineHeight: 20,
 //   },
 //   addButton: {
-//     backgroundColor: "#155DFC",
+//     backgroundColor: "#B91C1C",
 //     paddingHorizontal: 24,
 //     paddingVertical: 10,
 //     borderRadius: 8,
-//     shadowColor: "#155DFC",
+//     shadowColor: "#B91C1C",
 //     shadowOffset: { width: 0, height: 2 },
 //     shadowOpacity: 0.2,
 //     shadowRadius: 4,
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
     color: "#1a1a1a",
   },
   editButton: {
-    backgroundColor: "#155DFC",
+    backgroundColor: "#B91C1C",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8, 
@@ -700,13 +700,13 @@ const styles = StyleSheet.create({
   editIcon: {
     width: 14,
     height: 14,
-    tintColor: "#155DFC",
+    tintColor: "#B91C1C",
     marginRight: 6,
   },
   editText: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#155DFC",
+    color: "#B91C1C",
   },
 
   sectionTitle: {
@@ -816,11 +816,11 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   addButton: {
-    backgroundColor: "#155DFC",
+    backgroundColor: "#B91C1C",
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 8,
-    shadowColor: "#155DFC",
+    shadowColor: "#B91C1C",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,

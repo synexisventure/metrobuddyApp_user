@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: '#155DFC', 
+    backgroundColor: '#B91C1C', 
     borderRadius: 8,
     flexDirection: 'row',
     justifyContent: 'center',

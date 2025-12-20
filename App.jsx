@@ -42,13 +42,13 @@ const SafeAreaApp = () => {
         paddingBottom: bottomPadding,
         paddingLeft: insets.left,
         paddingRight: insets.right,
-        backgroundColor: '#155DFC', // match your app header bg
+        backgroundColor: '#B91C1C', // match your app header bg
       }}
     >
       {/* Status bar styling */}
       <StatusBar
         barStyle="light-content"
-        backgroundColor="#155DFC"
+        backgroundColor="#B91C1C"
       />
 
       {/* App provider and navigation */}

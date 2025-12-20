@@ -1,21 +1,36 @@
-import React from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import React, { useContext, useCallback } from 'react';
+import { StyleSheet, ScrollView } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+
 import ProfileHeader from "../../components/profile/ProfileHeader";
 import ProfileCounts from "../../components/profile/ProfileCounts";
 import ProfileBody from "../../components/profile/ProfileBody";
 import ProfileFooter from "../../components/profile/ProfileFooter";
+import { AppContext } from '../../context/AppContext';
 
 const ProfileScreen = () => {
+  const {
+    profile,
+    profileLoading,
+    fetchUserProfile,
+  } = useContext(AppContext);
+
+  // Call profile API when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserProfile();
+    }, [])
+  );
+
   return (
     <ScrollView
       style={styles.main}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{  }}
     >
-      <ProfileHeader />
-      <ProfileCounts />
-      <ProfileBody />
-      <ProfileFooter/> 
+      <ProfileHeader profile={profile} loading={profileLoading} />
+      <ProfileCounts profile={profile} />
+      <ProfileBody profile={profile} />
+      <ProfileFooter />
     </ScrollView>
   );
 };

@@ -23,7 +23,7 @@ const SingleBusinessLeadScreen = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#155DFC" barStyle="light-content" />
+      <StatusBar backgroundColor="#B91C1C" barStyle="light-content" />
 
       <LeadsHeader businessName={business.businessName} />
 

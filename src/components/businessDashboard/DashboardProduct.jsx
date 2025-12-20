@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     addButton: {
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
         paddingHorizontal: 24,
         paddingVertical: 12,
         borderRadius: 8,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     priceTag: {
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 6,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     },
     tagText: {
         fontSize: 12,
-        color: '#155DFC',
+        color: '#B91C1C',
         fontWeight: '500',
     },
     footer: {

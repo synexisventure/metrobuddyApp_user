@@ -231,7 +231,7 @@ const Step5Form = ({ onNext = ()=>{} }) => {
   if (loadingBusinessCategory || loading) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#155DFC" />
+        <ActivityIndicator size="large" color="#B91C1C" />
         <Text style={styles.loaderText}>Loading categories...</Text>
       </View>
     );
@@ -278,7 +278,7 @@ const Step5Form = ({ onNext = ()=>{} }) => {
 
       {subLoading  ? (
         <View style={styles.loader}>
-          <ActivityIndicator size="small" color="#155DFC" />
+          <ActivityIndicator size="small" color="#B91C1C" />
           <Text style={styles.loaderText}>Loading subcategories...</Text>
         </View>
       ) : availableSubs.length > 0 ? (

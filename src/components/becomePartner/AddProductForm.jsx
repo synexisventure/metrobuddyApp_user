@@ -358,7 +358,7 @@ const AddProductForm = ({ onNext = ()=>{} }) => {
   if (loadingBusinessProducts) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#155DFC" />
+        <ActivityIndicator size="large" color="#B91C1C" />
         <Text style={styles.loaderText}>Loading business details...</Text>
       </View>
     );

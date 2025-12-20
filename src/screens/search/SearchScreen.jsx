@@ -271,7 +271,7 @@ const SearchScreen = () => {
             {/* 🔄 Loader */}
             {loading && (
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#155DFC" />
+                    <ActivityIndicator size="large" color="#B91C1C" />
                     <Text style={styles.loadingText}>Searching...</Text>
                 </View>
             )}
@@ -324,7 +324,7 @@ const SearchScreen = () => {
                                     <Switch
                                         value={useCurrentLocation}
                                         onValueChange={handleToggleCurrentLocation}
-                                        thumbColor={useCurrentLocation ? '#155DFC' : '#f4f3f4'}
+                                        thumbColor={useCurrentLocation ? '#B91C1C' : '#f4f3f4'}
                                         trackColor={{ false: '#767577', true: '#c6d9ff' }}
                                     />
                                 </View>
@@ -442,7 +442,7 @@ const SearchScreen = () => {
                                     <Switch
                                         value={openNow}
                                         onValueChange={setOpenNow}
-                                        thumbColor={openNow ? '#155DFC' : '#f4f3f4'}
+                                        thumbColor={openNow ? '#B91C1C' : '#f4f3f4'}
                                         trackColor={{ false: '#767577', true: '#c6d9ff' }}
                                     />
                                 </View>
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
         minWidth: 70,
     },
     activeSearchButton: {
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
     },
     inactiveSearchButton: {
         backgroundColor: '#e8ecf0',
@@ -545,13 +545,13 @@ const styles = StyleSheet.create({
     filterIcon: {
         width: 16,
         height: 16,
-        tintColor: '#155DFC',
+        tintColor: '#B91C1C',
         marginRight: 6,
     },
     filterText: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#155DFC',
+        color: '#B91C1C',
     },
     // Loading
     loadingContainer: {
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     },
     applyButton: {
         flex: 2,
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
         paddingVertical: 12,
         borderRadius: 12,
         alignItems: 'center',
@@ -673,7 +673,7 @@ const styles = StyleSheet.create({
     filterIcon: {
         width: 18,
         height: 18,
-        tintColor: '#155DFC',
+        tintColor: '#B91C1C',
     },
     filterTitle: {
         fontSize: 16,
@@ -704,8 +704,8 @@ const styles = StyleSheet.create({
         borderColor: '#e8e8e8',
     },
     selectedCityChip: {
-        backgroundColor: '#155DFC',
-        borderColor: '#155DFC',
+        backgroundColor: '#B91C1C',
+        borderColor: '#B91C1C',
     },
     cityText: {
         fontSize: 14,
@@ -722,7 +722,7 @@ const styles = StyleSheet.create({
     radiusValue: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#155DFC',
+        color: '#B91C1C',
         textAlign: 'center',
         marginBottom: 12,
     },
@@ -744,8 +744,8 @@ const styles = StyleSheet.create({
         flexShrink: 0,
     },
     selectedRadiusButton: {
-        backgroundColor: '#155DFC',
-        borderColor: '#155DFC',
+        backgroundColor: '#B91C1C',
+        borderColor: '#B91C1C',
     },
     radiusButtonText: {
         fontSize: 12,
@@ -776,8 +776,8 @@ const styles = StyleSheet.create({
         flexShrink: 0,
     },
     selectedRatingChip: {
-        backgroundColor: '#155DFC',
-        borderColor: '#155DFC',
+        backgroundColor: '#B91C1C',
+        borderColor: '#B91C1C',
     },
     ratingStarIcon: {
         width: 16,

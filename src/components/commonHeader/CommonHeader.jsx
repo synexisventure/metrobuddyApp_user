@@ -38,7 +38,7 @@ const CommonHeader = ({ animatedScrollY }) => {
     // 1. Define interpolation for background color change on scroll
     const animatedBGC = scrollY.interpolate({
         inputRange: [0, 100],
-        outputRange: ['#155DFC', '#0E49B3'], // Blue to a slightly darker blue
+        outputRange: ['#B91C1C', '#B91C1C'], // Blue to a slightly darker blue
         extrapolate: 'clamp',
     });
 
@@ -108,7 +108,7 @@ export default CommonHeader
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#155DFC',
+        backgroundColor: '#B91C1C',
         // paddingTop: 10, // Space for status bar
         paddingHorizontal: 10,
         paddingBottom: 10,

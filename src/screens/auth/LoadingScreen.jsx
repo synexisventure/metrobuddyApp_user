@@ -109,7 +109,7 @@ const LoadingScreen = () => {
       
       {/* Loading Indicator */}
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2E6CF8" />
+        <ActivityIndicator size="large" color="#B91C1C" />
         <View style={styles.dotsContainer}>
           <Animated.View style={[styles.dot, styles.dot1]} />
           <Animated.View style={[styles.dot, styles.dot2]} />
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
-    shadowColor: "#2E6CF8",
+    shadowColor: "#B91C1C",
     shadowOffset: {
       width: 0,
       height: 8,
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#2E6CF8",
+    backgroundColor: "#B91C1C",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 3,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "#2E6CF8",
+    backgroundColor: "#B91C1C",
   },
   appName: {
     fontSize: 28,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#2E6CF8",
+    backgroundColor: "#B91C1C",
     opacity: 0.6,
   },
   dot1: {

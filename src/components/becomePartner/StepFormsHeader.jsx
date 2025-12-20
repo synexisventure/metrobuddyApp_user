@@ -32,7 +32,7 @@ export default StepFormsHeader;
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: '#155DFC',
+    backgroundColor: '#B91C1C',
     paddingHorizontal: 16,
     paddingVertical: 12,
   },

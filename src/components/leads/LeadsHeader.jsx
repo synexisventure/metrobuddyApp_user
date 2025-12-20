@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#155DFC', // blue background
+    backgroundColor: '#B91C1C', // blue background
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
