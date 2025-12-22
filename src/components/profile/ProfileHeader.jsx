@@ -38,11 +38,15 @@ const ProfileHeader = () => {
 
                     {/* Member since */}
                     <Text style={styles.memberSince}>
-                        Member since : {profile?.createdAt ? profile.createdAt : "No data"}
+                        Member since : {
+                            profile?.createdAt
+                                ? new Date(profile.createdAt).toLocaleDateString()
+                                : "No data"
+                        }
                     </Text>
 
                     <View style={styles.badge}>
-                        <Text style={styles.badgeText}>Premium Member</Text>
+                        <Text style={styles.badgeText}>Welcome {profile?.name || "User"}</Text>
                     </View>
                 </View>
             </View>

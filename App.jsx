@@ -54,10 +54,11 @@ const SafeAreaApp = () => {
       {/* App provider and navigation */}
       <AppProvider>
         <NavigationContainer>
-          <Toast position="top" />
           <RootNavigator />
         </NavigationContainer>
       </AppProvider>
+
+      <Toast position="top" />
     </View>
   );
 };

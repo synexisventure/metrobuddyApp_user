@@ -28,7 +28,7 @@ const ProfileScreen = () => {
       showsVerticalScrollIndicator={false}
     >
       <ProfileHeader profile={profile} loading={profileLoading} />
-      <ProfileCounts profile={profile} />
+      {/* <ProfileCounts profile={profile} /> */}
       <ProfileBody profile={profile} />
       <ProfileFooter />
     </ScrollView>

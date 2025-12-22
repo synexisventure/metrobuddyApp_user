@@ -7,10 +7,10 @@ export const AppContext = createContext();
 export const AppProvider = ({ children }) => {
 
   const API_BASE_URL = "http://192.168.1.11:7000/api";
-  // const IMAGE_BASE_URL = "http://192.168.1.11:7000";
+  const IMAGE_BASE_URL = "http://192.168.1.11:7000";
 
   // const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
-  const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";
+  // const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";
 
   // const API_BASE_URL = "https://5ebc2d9541bd.ngrok-free.app/api";
   // const IMAGE_BASE_URL = "https://5ebc2d9541bd.ngrok-free.app";
