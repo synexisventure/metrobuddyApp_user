@@ -276,7 +276,12 @@ const Step7Form = ({ onSubmit = () => { } }) => {
 
       fetchBusinessDocuments();
       onSubmit();
-      navigation.navigate("SubscriptionScreen");
+
+      console.log("sending business id from form : " , finalBusinessId);
+      
+      navigation.navigate("SubscriptionScreen", {
+        businessId: finalBusinessId
+      });
 
     } catch (error) {
       console.log("Upload Error:", error?.response?.data || error);

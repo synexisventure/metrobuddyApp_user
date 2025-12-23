@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
 import { AppContext } from '../../context/AppContext'
 
-const SubscriptionDetailsScreen = () => {
+const SubscriptionDetailsScreen = ({businessDetails}) => {
   const navigation = useNavigation()
   const { API_BASE_URL } = useContext(AppContext)
 
@@ -76,7 +76,11 @@ const SubscriptionDetailsScreen = () => {
         <Text style={styles.title}>Subscription Details</Text>
         <TouchableOpacity
           style={styles.buyBtn}
-          onPress={() => navigation.navigate('SubscriptionScreen' , {isNavigateToBack : true})}
+          onPress={() => {
+            console.log("sending busienss id from current business : ", businessDetails?.businessId);
+            navigation.navigate('SubscriptionScreen', { isNavigateToBack: true, businessId: businessDetails?.businessId })
+
+          }}
         >
           <Image source={require('../../assets/images/security.png')} style={styles.icon} />
           <Text style={styles.buyText}>
@@ -154,7 +158,10 @@ const SubscriptionDetailsScreen = () => {
           <View style={styles.actions}>
             <TouchableOpacity
               style={styles.primaryBtn}
-              onPress={() => navigation.navigate('SubscriptionScreen')}
+              onPress={() => {
+                console.log("sending busienss id from current business : ", businessDetails?.businessId);
+                navigation.navigate('SubscriptionScreen', { isNavigateToBack: true, businessId: businessDetails?.businessId })
+              }}
             >
               <Text style={styles.btnText}>Buy Subscription Plan</Text>
             </TouchableOpacity>

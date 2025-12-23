@@ -20,7 +20,7 @@ const SubscriptionScreen = () => {
   
   const route = useRoute();
 
-  const {isNavigateToBack} = route.params || {}; 
+  const {isNavigateToBack , businessId } = route.params || {};  
 
   const [isYearly, setIsYearly] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -100,9 +100,13 @@ const SubscriptionScreen = () => {
     try {
       const token = await AsyncStorage.getItem("token");
 
+      console.log("buying for subsc : " , subscriptionPlan);
+      
+
       const buyData = {
-        subscriptionId: subscriptionPlan._id,
-        planType: planType
+        subscriptionId: subscriptionPlan?._id,
+        planType: subscriptionPlan?.planType,
+        businessId: businessId
       };
 
       console.log("Buying subscription with data:", buyData);
@@ -126,7 +130,7 @@ const SubscriptionScreen = () => {
         Alert.alert("Error", response.data.message || "Subscription purchase failed");
       }
     } catch (error) {
-      console.error("Buy Subscription Error:", error);
+      console.error("Buy Subscription Error:", error?.response);
       const errorMessage = error.response?.data?.message || "Subscription purchase failed";
       
       if (errorMessage.includes("already have an active subscription")) {
@@ -162,6 +166,7 @@ const SubscriptionScreen = () => {
       description: plan.description,
       price: plan.price?.toString() || "--",
       period: `/${plan.planType}`,
+      planType : plan.planType,
       badge: plan.isPopular ? "Popular" :"Plan",
       badgeColor: getPlanBadgeColor(plan.planName),
       borderColor: getPlanBorderColor(plan.planName),
@@ -241,7 +246,7 @@ const SubscriptionScreen = () => {
       />
 
       {/* Current Subscription Info */}
-      {currentSubscription && (
+      {/* {currentSubscription && (
         <View style={styles.currentSubscriptionContainer}>
           <Text style={styles.currentSubscriptionTitle}>Current Plan</Text>
           <View style={styles.currentSubscriptionCard}>
@@ -261,7 +266,7 @@ const SubscriptionScreen = () => {
             </Text>
           </View>
         </View>
-      )}
+      )} */}
 
       {/* Scrollable content */}
       <ScrollView

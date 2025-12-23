@@ -86,7 +86,7 @@ const BusinessSingleScreen = () => {
                 {activeTab === "Overview" && <DashboardOverview />}
                 {activeTab === "Reviews" && <DashboardReviews />}
                 {activeTab === "Photos" && <DashboardPhotos />}
-                {activeTab === "Subscription" && <CurrentSubscriptionScreen />}
+                {activeTab === "Subscription" && <CurrentSubscriptionScreen businessDetails={businessDetails}/>}
                 {activeTab === "Personal Wallet" && <DashboardPersonalWallet />}
                 {activeTab === "Products" && <DashboardProduct />}
 

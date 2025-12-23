@@ -12,6 +12,7 @@ import AddProductForm from '../../components/becomePartner/AddProductForm';
 import Step5Form from '../../components/becomePartner/Step5Form';
 import Step6Form from '../../components/becomePartner/Step6Form';
 import Step7Form from '../../components/becomePartner/Step7Form';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AddBusinessScreen = () => {
   const {
@@ -48,12 +49,17 @@ const AddBusinessScreen = () => {
 
   const scrollToTop = () => scrollRef.current?.scrollTo({ y: 0, animated: true });
 
-  const nextStep = (submitted = true) => {
+  const nextStep = async (submitted = true) => {
+    const businessId = await AsyncStorage.getItem("businessId");
+
     setStep(prev => {
-      // ✅ If already on last step, navigate
+
+      // If already on last step, navigate
       if (prev === totalSteps) {
-        // 👇 yahan navigation karo
-        navigation.navigate("SubscriptionScreen");
+        console.log("sending business id from form (skip now) : ", businessId);
+        navigation.navigate("SubscriptionScreen", {
+          businessId: businessId
+        });
         return prev; // step change nahi hoga
       }
 

@@ -15,7 +15,7 @@ const SubscriptionBodyMonthly = (props) => {
 
   const handleSubscribe = (pkg) => {
     if (props.onSubscriptionPress) {
-      props.onSubscriptionPress(pkg, 'monthly');
+      props.onSubscriptionPress(pkg);
     }
   };
 
