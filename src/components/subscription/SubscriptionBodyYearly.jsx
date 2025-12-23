@@ -70,7 +70,7 @@ const SubscriptionBodyYearly = (props) => {
                 <View style={[styles.packageBadge, { backgroundColor: pkg.badgeColor }]}>
                   <Text style={styles.packageBadgeText}>{pkg.name}</Text>
                 </View>
-                <Text style={styles.planText}>{pkg.name} Yearly Plan</Text>
+                <Text style={styles.planText}>{pkg?.description}</Text>
               </View>
               
               {/* Price */}

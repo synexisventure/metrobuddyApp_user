@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useContext } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { AppContext } from '../../context/AppContext';
 
 // Components
@@ -19,6 +19,8 @@ const AddBusinessScreen = () => {
     formStatus,
     formStatusLoading,
   } = useContext(AppContext);
+
+  const navigation = useNavigation();
 
   const [step, setStep] = useState(1);
   const totalSteps = 7;
@@ -48,7 +50,14 @@ const AddBusinessScreen = () => {
 
   const nextStep = (submitted = true) => {
     setStep(prev => {
-      const next = Math.min(prev + 1, totalSteps);
+      // ✅ If already on last step, navigate
+      if (prev === totalSteps) {
+        // 👇 yahan navigation karo
+        navigation.navigate("SubscriptionScreen");
+        return prev; // step change nahi hoga
+      }
+
+      const next = prev + 1;
       setTimeout(scrollToTop, 50);
       return next;
     });
@@ -99,7 +108,7 @@ const AddBusinessScreen = () => {
       case 7:
         return (
           <Step7Form
-            onSubmit={() => nextStep(true)} 
+            onSubmit={() => nextStep(true)}
           />
         );
       default: return null;

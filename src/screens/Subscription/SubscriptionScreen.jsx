@@ -159,9 +159,10 @@ const SubscriptionScreen = () => {
     return subscriptionPlans.map(plan => ({
       _id: plan._id,
       name: plan.planName,
-      price: plan.monthlyPrice?.toString() || "0",
-      period: "/month",
-      badge: plan.isPopular ? "Popular" : getPlanBadge(plan.planName),
+      description: plan.description,
+      price: plan.price?.toString() || "--",
+      period: `/${plan.planType}`,
+      badge: plan.isPopular ? "Popular" :"Plan",
       badgeColor: getPlanBadgeColor(plan.planName),
       borderColor: getPlanBorderColor(plan.planName),
       buttonColor: getPlanButtonColor(plan.planName),
@@ -174,6 +175,7 @@ const SubscriptionScreen = () => {
     return subscriptionPlans.map(plan => ({
       _id: plan._id,
       name: plan.planName,
+      description: plan.description,
       price: plan.yearlyPrice?.toString() || "0",
       period: "/year",
       badge: plan.isPopular ? "Popular" : getPlanBadge(plan.planName),

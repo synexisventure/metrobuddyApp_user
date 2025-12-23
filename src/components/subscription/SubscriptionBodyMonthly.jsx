@@ -70,7 +70,7 @@ const SubscriptionBodyMonthly = (props) => {
                 <View style={[styles.packageBadge, { backgroundColor: pkg.badgeColor }]}>
                   <Text style={styles.packageBadgeText}>{pkg.name}</Text>
                 </View>
-                <Text style={styles.planText}>{pkg.name} Monthly Plan</Text>
+                <Text style={styles.planText}>{pkg?.description}</Text>
               </View>
               
               {/* Price */}
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   packageBadge: {
     paddingHorizontal: 20,

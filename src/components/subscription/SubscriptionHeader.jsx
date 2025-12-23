@@ -38,7 +38,7 @@ const SubscriptionHeader = ({ isYearly, onToggle, isNavigateToBack = false }) =>
                         <Text style={styles.title}>Choose Subscription Plan</Text>
 
                         <TouchableOpacity
-                            style={styles.backButton}
+                            style={[styles.backButton,{backgroundColor : "white"}]}
                             onPress={() => {
 
                                 navigation.navigate("MainTabs", {
@@ -50,7 +50,7 @@ const SubscriptionHeader = ({ isYearly, onToggle, isNavigateToBack = false }) =>
                         >
                             <Image
                                 source={require('../../assets/images/cross.png')}
-                                style={styles.backIcon}
+                                style={[styles.backIcon,{}]}
                             />
                         </TouchableOpacity>
                     </>
@@ -64,7 +64,7 @@ const SubscriptionHeader = ({ isYearly, onToggle, isNavigateToBack = false }) =>
             </Text>
 
             {/* Switch Toggle */}
-            <View style={styles.toggleContainer}>
+            {/* <View style={styles.toggleContainer}>
                 <Text style={[styles.toggleLabel, !isYearly && styles.activeLabel]}>
                     Monthly
                 </Text>
@@ -80,7 +80,7 @@ const SubscriptionHeader = ({ isYearly, onToggle, isNavigateToBack = false }) =>
                 <Text style={[styles.toggleLabel, isYearly && styles.activeLabel]}>
                     Yearly
                 </Text>
-            </View>
+            </View> */}
         </View>
     );
 };
