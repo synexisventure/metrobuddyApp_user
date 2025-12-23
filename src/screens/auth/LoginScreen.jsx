@@ -187,7 +187,7 @@ const LoginScreen = () => {
             <Text
               style={[
                 styles.tabText,
-                { color: loginMethod === "phone" ? "#2E6CF8" : "#777" },
+                { color: loginMethod === "phone" ? "#B91C1C" : "#777" },
               ]}
             >
               Phone
@@ -195,7 +195,7 @@ const LoginScreen = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            disabled={true} // Email login temporarily disabled
+            //disabled={true} // Email login temporarily disabled
             style={[
               styles.tab,
               loginMethod === "email" && styles.activeTab,
@@ -211,7 +211,7 @@ const LoginScreen = () => {
             <Text
               style={[
                 styles.tabText,
-                { color: loginMethod === "email" ? "#2E6CF8" : "#777" },
+                { color: loginMethod === "email" ? "#B91C1C" : "#777" },
               ]}
             >
               Email
@@ -255,7 +255,7 @@ const LoginScreen = () => {
           {/* OTP Section */}
           {!otpSent ? (
             <TouchableOpacity
-              style={[styles.sendOtpBtn, loading && { backgroundColor: "#8CAAFD" }]}
+              style={[styles.sendOtpBtn, loading && { backgroundColor: "#B91C1C" }]}
               onPress={handleSendOtp}
               disabled={loading}
             >
@@ -276,7 +276,7 @@ const LoginScreen = () => {
                 onChangeText={(text) => setOtp(text.replace(/[^0-9]/g, ""))}
               />
               <TouchableOpacity
-                style={[styles.continueBtn, loading && { backgroundColor: "#8CAAFD" }]}
+                style={[styles.continueBtn, loading && { backgroundColor: "#B91C1C" }]}
                 onPress={handleVerifyOtp}
                 disabled={loading}
               >
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: "#2E6CF8",
+    backgroundColor: "#B91C1C",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: "#2E6CF8",
+    backgroundColor: "#B91C1C",
   },
   title: {
     fontSize: 18,
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   sendOtpBtn: {
-    backgroundColor: "#2E6CF8",
+    backgroundColor: "#B91C1C",
     borderRadius: 8,
     paddingVertical: 12,
     marginTop: 15,
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   continueBtn: {
-    backgroundColor: "#2E6CF8",
+    backgroundColor: "#B91C1C",
     borderRadius: 8,
     paddingVertical: 12,
     marginTop: 15,
@@ -429,6 +429,6 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   linkText: {
-    color: "#2E6CF8",
+    color: "#B91C1C",
   },
 });

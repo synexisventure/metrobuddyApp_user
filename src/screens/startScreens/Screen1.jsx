@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: "#2F6FE8",
+    backgroundColor: "#B91C1C",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -127,10 +127,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   activeDot: {
-    backgroundColor: "#2F6FE8",
+    backgroundColor: "#B91C1C",
   },
   nextButton: {
-    backgroundColor: "#2F6FE8",
+    backgroundColor: "#B91C1C",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 60,

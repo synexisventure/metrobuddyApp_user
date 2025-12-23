@@ -103,12 +103,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   linkText: {
-    color: "#2F6FE8",
+    color: "#B91C1C",
     fontSize: 12,
     fontWeight: "500",
   },
   dot: {
-    color: "#2F6FE8",
+    color: "#B91C1C",
     marginHorizontal: 5,
   },
 });
