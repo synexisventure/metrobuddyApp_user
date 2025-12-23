@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
     View,
     Text,
@@ -9,12 +9,17 @@ import {
     FlatList,
     Image,
     Pressable,
-    Alert
+    Alert,
+    Keyboard,
+    ScrollView
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppContext } from "../../context/AppContext";
+
+// keyboard refocus
+import useKeyboardVisibility from "../../utils/useKeyboardVisibility";
 
 const CLOCK_ICON = require("../../assets/images/clock.png");
 
@@ -25,6 +30,10 @@ const RaiseTicketScreen = ({ navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [description, setDescription] = useState("");
     const [tickets, setTickets] = useState([]);
+    const [subject, setSubject] = useState("");
+    const subjectRef = useRef(null);
+
+
     const [loading, setLoading] = useState(false);
 
     // GET TICKETS
@@ -50,6 +59,17 @@ const RaiseTicketScreen = ({ navigation }) => {
         fetchTickets();
     }, []);
 
+    // refocus state and function 
+    const keyboardVisibleRef = useKeyboardVisibility();
+    const descriptionRef = useRef(null);
+    const refocusIfKeyboardHidden = async (inputRef) => {
+        if (keyboardVisibleRef.current) return;
+
+        Keyboard.dismiss(); // hide keyboard if any
+        await new Promise((r) => setTimeout(r, 50)); // small delay
+        inputRef?.focus(); // refocus input
+    };
+
     // CREATE TICKET
     const submitTicket = async () => {
         if (!description.trim()) {
@@ -62,7 +82,7 @@ const RaiseTicketScreen = ({ navigation }) => {
             const token = await AsyncStorage.getItem("token");
 
             await axios.post(`${API_BASE_URL}/user/ticket/create`,
-                { description: description.trim() },
+                { subject: subject.trim(), description: description.trim() },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -71,9 +91,9 @@ const RaiseTicketScreen = ({ navigation }) => {
                 }
             );
 
-
-
+            setSubject("");
             setDescription("");
+
             setModalVisible(false);
             fetchTickets();
             Alert.alert("Success", "Ticket created successfully!");
@@ -83,9 +103,9 @@ const RaiseTicketScreen = ({ navigation }) => {
             console.log("Create ticket failed:", error?.response);
 
             if (error?.response) {
-                Alert.alert( "Error", error?.response?.data?.message);
+                Alert.alert("Error", error?.response?.data?.message);
             } else if (!error?.response) {
-                Alert.alert( "Error", "Network error. Please check your internet connection.");
+                Alert.alert("Error", "Network error. Please check your internet connection.");
             } else {
                 Alert.alert("Error", "Something went wrong.");
             }
@@ -120,7 +140,11 @@ const RaiseTicketScreen = ({ navigation }) => {
             </View>
 
             <Text style={styles.description}>
-                {item.description}
+                <Text style={[styles.description, { fontWeight: "800" }]}>Subject : </Text> {item.subject}
+            </Text>
+
+            <Text style={styles.description}>
+                <Text style={[styles.description, { fontWeight: "800" }]}>Description : </Text>  {item.description}
             </Text>
 
             <View style={styles.cardFooter}>
@@ -168,7 +192,7 @@ const RaiseTicketScreen = ({ navigation }) => {
 
             {/* TICKET LIST */}
             <View style={styles.listHeader}>
-                <Text style={styles.listTitle}>My Previous Tickets status</Text>
+                <Text style={styles.listTitle}>Previous Tickets statuses</Text>
                 {/* <Text style={styles.ticketCount}>({tickets.length})</Text> */}
 
             </View>
@@ -209,47 +233,65 @@ const RaiseTicketScreen = ({ navigation }) => {
                 onRequestClose={() => setModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Create New Ticket</Text>
-                            <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                <Text style={styles.closeBtn}>✕</Text>
-                            </TouchableOpacity>
+                    <ScrollView
+                        contentContainerStyle={{}}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>Create New Ticket</Text>
+                                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                    <Text style={styles.closeBtn}>✕</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <TextInput
+                                ref={subjectRef}
+                                style={[styles.textArea, { minHeight: 50 }]}
+                                placeholder="Enter subject..."
+                                placeholderTextColor="#999"
+                                value={subject}
+                                onChangeText={setSubject}
+                                onPressIn={() => refocusIfKeyboardHidden(subjectRef.current)}
+                            />
+
+                            <TextInput
+                                ref={descriptionRef}
+                                style={styles.textArea}
+                                placeholder="Describe your issue in detail..."
+                                placeholderTextColor="#999"
+                                value={description}
+                                onChangeText={setDescription}
+                                multiline
+                                numberOfLines={5}
+                                textAlignVertical="top"
+                                onPressIn={() => refocusIfKeyboardHidden(descriptionRef.current)}
+                            />
+
+                            <View style={styles.modalActions}>
+                                <Pressable
+                                    style={[styles.modalBtn, styles.cancelBtn]}
+                                    onPress={() => setModalVisible(false)}
+                                    disabled={loading}
+                                >
+                                    <Text style={styles.cancelBtnText}>Cancel</Text>
+                                </Pressable>
+
+                                <Pressable
+                                    style={[styles.modalBtn, styles.submitBtn, loading && styles.disabledBtn]}
+                                    onPress={submitTicket}
+                                    disabled={loading}
+                                >
+                                    <Text style={styles.submitBtnText}>
+                                        {loading ? "Creating..." : "Create Ticket"}
+                                    </Text>
+                                </Pressable>
+                            </View>
                         </View>
-
-                        <TextInput
-                            style={styles.textArea}
-                            placeholder="Describe your issue in detail..."
-                            placeholderTextColor="#999"
-                            value={description}
-                            onChangeText={setDescription}
-                            multiline
-                            numberOfLines={5}
-                            textAlignVertical="top"
-                        />
-
-                        <View style={styles.modalActions}>
-                            <Pressable
-                                style={[styles.modalBtn, styles.cancelBtn]}
-                                onPress={() => setModalVisible(false)}
-                                disabled={loading}
-                            >
-                                <Text style={styles.cancelBtnText}>Cancel</Text>
-                            </Pressable>
-
-                            <Pressable
-                                style={[styles.modalBtn, styles.submitBtn, loading && styles.disabledBtn]}
-                                onPress={submitTicket}
-                                disabled={loading}
-                            >
-                                <Text style={styles.submitBtnText}>
-                                    {loading ? "Creating..." : "Create Ticket"}
-                                </Text>
-                            </Pressable>
-                        </View>
-                    </View>
+                    </ScrollView>
                 </View>
             </Modal>
+
         </SafeAreaView>
     );
 };
@@ -432,10 +474,10 @@ const styles = StyleSheet.create({
     // MODAL
     modalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.5)",
+        backgroundColor: "rgba(0,0,0,0.6)",
         justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
+        // alignItems: "center",
+        padding: 10,
     },
     modalContent: {
         backgroundColor: "white",
@@ -449,7 +491,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: 20,
+        padding: 10,
         borderBottomWidth: 1,
         borderBottomColor: "#F0F0F0",
     },
