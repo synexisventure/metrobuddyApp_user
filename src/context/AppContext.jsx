@@ -1,16 +1,17 @@
 import React, { createContext, useState } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
 
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
 
-  // const API_BASE_URL = "http://192.168.1.11:7000/api";
-  // const IMAGE_BASE_URL = "http://192.168.1.11:7000";
+  const API_BASE_URL = "http://192.168.1.11:7000/api";
+  const IMAGE_BASE_URL = "http://192.168.1.11:7000";
 
-  const API_BASE_URL = "http://127.0.0.1:7000/api";
-  const IMAGE_BASE_URL = "http://127.0.0.1:7000"; 
+  // const API_BASE_URL = "http://127.0.0.1:7000/api";
+  // const IMAGE_BASE_URL = "http://127.0.0.1:7000"; 
 
   // const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
   // const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";
@@ -332,6 +333,50 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  //get search api
+  const [allSearchHistory, setAllSearchHistory] = useState([]);
+  const [allSearchHistoryLoading, setAllSearchHistoryLoading] = useState([]);
+  const [searchCurrentPage, setSearchCurrentPage] = useState(1);
+  const [searchTotalPages, setSearchTotalPages] = useState(1);
+  const fetchAllSearchHistory = async (page = 1) => {
+    // stop if no more pages
+    if (page > searchTotalPages && page !== 1) return;
+    setAllSearchHistoryLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.get(
+        `${API_BASE_URL}/user/search/history?page=${page}&limit=10`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("my history data :  ", response.data);
+      console.log("my current page : ", response.data.totalPages);
+      console.log("my total page : ", response.data.currentPage);
+
+      setAllSearchHistory(response.data.data);
+      setSearchCurrentPage(response.data.currentPage);
+      setSearchTotalPages( response.data.totalPages);
+
+    } catch (error) {
+
+      const msg = handleApiError(error, "Failed to fetch Search History");
+      console.error("History API Error:", msg);
+
+      Toast.show({
+        type: 'error',
+        text1: 'History getting error',
+        text2: msg,
+      });
+
+    } finally {
+      setAllSearchHistoryLoading(false);
+    }
+  };
+
   // PROVIDER EXPORT 
   return (
     <AppContext.Provider
@@ -415,6 +460,13 @@ export const AppProvider = ({ children }) => {
         profile,
         profileLoading,
         fetchUserProfile,
+
+        // get search history api
+        allSearchHistory,
+        allSearchHistoryLoading,
+        searchTotalPages,
+        searchCurrentPage,
+        fetchAllSearchHistory,
 
       }}
     >
