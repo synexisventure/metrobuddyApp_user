@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useCallback, useContext, useEffect } from "react";
 import {
     StyleSheet,
     Text,
@@ -8,7 +8,7 @@ import {
     ActivityIndicator,
 } from "react-native";
 import { AppContext } from "../../context/AppContext";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 const CategoryItem = ({ name, iconUrl, bgColor }) => {
     return (
@@ -33,12 +33,17 @@ const BrowseCategory = ({ }) => {
         businessGlobalCategory,
         fetchBusinessGlobalCategory,
         businessCategoryLoading,
-        IMAGE_BASE_URL,
+        IMAGE_BASE_URL, 
     } = useContext(AppContext);
 
-    useEffect(() => {
-        fetchBusinessGlobalCategory();
-    }, []);
+    useFocusEffect(
+        useCallback(() => { 
+            if (businessGlobalCategory.length === 0) { 
+                fetchBusinessGlobalCategory();
+            }
+        }, [])
+    );
+
 
     return (
         <View style={styles.container}>

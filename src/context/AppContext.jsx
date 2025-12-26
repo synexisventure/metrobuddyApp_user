@@ -7,26 +7,34 @@ export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
 
-  const API_BASE_URL = "http://192.168.1.11:7000/api";
-  const IMAGE_BASE_URL = "http://192.168.1.11:7000";
+  // const API_BASE_URL = "http://192.168.1.11:7000/api";
+  // const IMAGE_BASE_URL = "http://192.168.1.11:7000";
 
-  // const API_BASE_URL = "http://127.0.0.1:7000/api";
-  // const IMAGE_BASE_URL = "http://127.0.0.1:7000"; 
+  const API_BASE_URL = "http://127.0.0.1:7000/api";
+  const IMAGE_BASE_URL = "http://127.0.0.1:7000";
 
   // const API_BASE_URL = "https://metrobuddy.synexisventure.com/api";
   // const IMAGE_BASE_URL = "https://metrobuddy.synexisventure.com";
 
-  // const API_BASE_URL = "https://5ebc2d9541bd.ngrok-free.app/api";
-  // const IMAGE_BASE_URL = "https://5ebc2d9541bd.ngrok-free.app";
-
   // ERROR HANDLER
   const [networkError, setNetworkError] = useState(false);
-  const handleApiError = (error, defaultMessage = "Something went wrong") => {
+  const handleApiError = async (error, defaultMessage = "Something went wrong") => {
     console.error("API Error:", error?.response?.data || error?.message || error);
     let message = defaultMessage;
 
     if (error?.response) {
       const status = error.response.status;
+
+      if (status === 401 || status === 403) {
+        console.log("JWT expired or invalid");
+
+        Toast.show({
+          type: "error",
+          text1: "Session expired",
+          text2: "Please login again.",
+        });
+      }
+
       if (status >= 500) {
         message = "Internal Server Error. Please try again later.";
       } else if (status >= 400 && status < 500) {
@@ -37,6 +45,13 @@ export const AppProvider = ({ children }) => {
       setNetworkError(false);
     } else if (!error?.response) {
       message = "Network error. Please check your internet connection.";
+
+      Toast.show({
+        type: "error",
+        text1: "Network Error",
+        text2: "Please check your internet.",
+      });
+
       setNetworkError(true);
     } else {
       message = error?.message || defaultMessage;
@@ -197,9 +212,11 @@ export const AppProvider = ({ children }) => {
 
 
   // Global Categories fetch 
-  const [businessGlobalCategory, setBusinessGlobalCategory] = useState(null);
+  const [businessGlobalCategory, setBusinessGlobalCategory] = useState([]);
   const [businessCategoryLoading, setBusinessCategoryLoading] = useState(false);
   const fetchBusinessGlobalCategory = async () => {
+    console.log("trying in fetch business category ");
+
     setBusinessCategoryLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
@@ -211,12 +228,12 @@ export const AppProvider = ({ children }) => {
       console.log('====================================');
       console.log("categories : ", response.data.data);
       console.log('====================================');
-      setBusinessGlobalCategory(response.data?.data || null);
+      setBusinessGlobalCategory(response.data?.data || []);
       setNetworkError(false);
     } catch (error) {
       const msg = handleApiError(error, "Failed to fetch business category");
       console.error(" Business Category Error:", msg);
-      setBusinessGlobalCategory(null);
+      setBusinessGlobalCategory([]);
     } finally {
       setBusinessCategoryLoading(false);
     }
@@ -359,7 +376,7 @@ export const AppProvider = ({ children }) => {
 
       setAllSearchHistory(response.data.data);
       setSearchCurrentPage(response.data.currentPage);
-      setSearchTotalPages( response.data.totalPages);
+      setSearchTotalPages(response.data.totalPages);
 
     } catch (error) {
 
