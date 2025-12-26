@@ -32,8 +32,8 @@ const BusinessSingleHeader = ({ business }) => {
       typeof photo === "string"
         ? photo
         : typeof photo?.url === "string"
-        ? photo.url
-        : null;
+          ? photo.url
+          : null;
 
     if (!urlString) return null;
 
@@ -80,14 +80,23 @@ const BusinessSingleHeader = ({ business }) => {
     } catch (error) {
       console.log("Save business failed:", error?.response || error);
 
-      if (error?.response?.data?.message) {
-        Alert.alert("Error", error.response.data.message);
+      // if (error?.response?.data?.message) {
+      //   Alert.alert("Error", error.response.data.message);
+      // } else {
+      //   Alert.alert(
+      //     "Error",
+      //     "Network error. Please check your internet connection."
+      //   );
+      // } 
+      
+      if (error?.response) {
+        showToast("error", "Error", error?.response?.data?.message);
+      } else if (!error?.response) {
+        showToast("error", "Error", "Network error. Please check your internet connection.");
       } else {
-        Alert.alert(
-          "Error",
-          "Network error. Please check your internet connection."
-        );
+        showToast("error", "Error", "Something went wrong.");
       }
+
     } finally {
       setLoading(false);
     }
