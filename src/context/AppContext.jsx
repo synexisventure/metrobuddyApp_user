@@ -394,6 +394,53 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // get all saved businesses 
+  const [savedBusinesses, setSavedBusinesses] = useState([]);
+  const [savedBusinessesLoading, setSavedBusinessesLoading] = useState(false);
+  const [savedBusinessesCurrentPage, setSavedBusinessesCurrentPage] = useState(1);
+  const [savedBusinessesTotalPages, setSavedBusinessesTotalPages] = useState(1);
+  const fetchSavedBusinesses = async (page = 1) => {
+    // stop if no more pages
+    if (page > savedBusinessesTotalPages && page !== 1) return;
+
+    setSavedBusinessesLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await axios.get(
+        `${API_BASE_URL}/user/saved-businesses?page=${page}&limit=10`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("saved businesses data :", response.data);
+      console.log("saved current page :", response.data.currentPage);
+      console.log("saved total pages :", response.data.totalPages);
+
+      setSavedBusinesses(response.data.data || []);
+      setSavedBusinessesCurrentPage(response.data.currentPage);
+      setSavedBusinessesTotalPages(response.data.totalPages);
+
+    } catch (error) {
+      const msg = handleApiError(error, "Failed to fetch saved businesses");
+      console.error("Saved Businesses API Error:", msg);
+
+      Toast.show({
+        type: "error",
+        text1: "Saved businesses error",
+        text2: msg,
+      });
+
+      setSavedBusinesses([]); // safety
+    } finally {
+      setSavedBusinessesLoading(false);
+    }
+  };
+
+
   // PROVIDER EXPORT 
   return (
     <AppContext.Provider
@@ -484,6 +531,13 @@ export const AppProvider = ({ children }) => {
         searchTotalPages,
         searchCurrentPage,
         fetchAllSearchHistory,
+
+        // get all saved businesses
+        savedBusinesses,
+        savedBusinessesLoading,
+        savedBusinessesCurrentPage,
+        savedBusinessesTotalPages,
+        fetchSavedBusinesses,
 
       }}
     >

@@ -16,7 +16,9 @@ import axios from 'axios';
 import SearchCard from "../../components/search/SearchCard";
 import { AppContext } from '../../context/AppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import getLocationPermission from '../../utils/LocationPermission'; // import location util
+
+import getLocationSafe from "../../utils/LocationPermission";
+// import getLocationPermission from '../../utils/LocationPermission'; // import location util
 
 const SearchScreen = () => {
     const { API_BASE_URL } = useContext(AppContext);
@@ -134,19 +136,37 @@ const SearchScreen = () => {
             const token = await AsyncStorage.getItem("token");
 
             // Static coordinates instead of fetching
-            const staticCoords = {
-                latitude: 28.897123785970944,
-                longitude: 77.19556187276137,
-            };
+            // const staticCoords = {
+            //     latitude: 28.897123785970944,
+            //     longitude: 77.19556187276137,
+            // };
 
             const body = {
                 query: searchQuery.trim(),
             };
 
             // Always send static location
-            body.latitude = staticCoords.latitude;
-            body.longitude = staticCoords.longitude;
-            body.radius = radius * 1000;
+            // body.latitude = staticCoords.latitude;
+            // body.longitude = staticCoords.longitude;
+            // body.radius = radius * 1000;
+
+            // Dynamic location
+            if (useCurrentLocation) {
+                const locationResult = await getLocationSafe();
+
+                console.log("location result : " , locationResult);
+                
+
+                if (!locationResult.success) {
+                    setLoading(false);
+                    return;
+                }
+
+                body.latitude = locationResult.coords.latitude;
+                body.longitude = locationResult.coords.longitude;
+                body.radius = radius * 1000;
+            }
+
 
             // Include city if selected
             if (selectedCity) {
@@ -228,9 +248,9 @@ const SearchScreen = () => {
             <View style={styles.searchContainer}>
                 <View style={styles.searchRow}>
                     <View style={styles.searchInputContainer}>
-                        <Image 
-                        source={SearchIcon} 
-                        style={styles.searchIcon} 
+                        <Image
+                            source={SearchIcon}
+                            style={styles.searchIcon}
                         />
                         <TextInput
                             style={styles.searchInput}

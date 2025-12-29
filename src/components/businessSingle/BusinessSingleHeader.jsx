@@ -23,6 +23,16 @@ const BusinessSingleHeader = ({ business }) => {
   const { IMAGE_BASE_URL, API_BASE_URL } = useContext(AppContext);
   const navigation = useNavigation();
 
+  // Toast helper
+  const showToast = (type, text1, text2 = "") => {
+    Toast.show({
+      type,
+      text1,
+      text2,
+      visibilityTime: 2500,
+    });
+  };
+
   const [loading, setLoading] = useState(false);
 
   const getImageUrl = (photo) => {
@@ -80,15 +90,7 @@ const BusinessSingleHeader = ({ business }) => {
     } catch (error) {
       console.log("Save business failed:", error?.response || error);
 
-      // if (error?.response?.data?.message) {
-      //   Alert.alert("Error", error.response.data.message);
-      // } else {
-      //   Alert.alert(
-      //     "Error",
-      //     "Network error. Please check your internet connection."
-      //   );
-      // } 
-      
+
       if (error?.response) {
         showToast("error", "Error", error?.response?.data?.message);
       } else if (!error?.response) {
